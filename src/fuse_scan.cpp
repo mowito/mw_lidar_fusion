@@ -41,7 +41,6 @@ class FusedScan {
 
         message_filters::Subscriber <sensor_msgs::LaserScan> scan_front_;
         message_filters::Subscriber <sensor_msgs::LaserScan> scan_back_;
-        //message_filters::TimeSynchronizer <sensor_msgs::LaserScan, sensor_msgs::LaserScan> sync_;
 
         typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> MySyncPolicy;
         message_filters::Synchronizer<MySyncPolicy> sync_;    
@@ -56,9 +55,6 @@ class FusedScan {
         void fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back)
         {
-            //ROS_INFO("angle_min : %f", scan_front->angle_min);
-            //ROS_INFO("angle_max : %f", scan_front->angle_max);
-            //ROS_INFO("angle_increment : %f", scan_front->angle_increment);
             if (!tflistener_.waitForTransform(scan_front->header.frame_id, "base_link", 
                 scan_front->header.stamp + ros::Duration().fromSec(scan_front->ranges.size()*scan_front->time_increment), 
                 ros::Duration(3.0))) {
@@ -82,13 +78,10 @@ class FusedScan {
             cloud_fuse.header.seq      = cloud_front.header.seq;
             cloud_fuse.header.stamp    = cloud_front.header.stamp;
 
-            //ROS_INFO("cloud_front size : %ld", cloud_front.points.size());
-
             //merge the point clouds
             cloud_fuse.points = cloud_back.points;
             cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_front.points.begin(), cloud_front.points.end());
 	
-            //ROS_INFO("Cloud fuse size: %ld", cloud_fuse.points.size());
             for (int i=0 ; i < 2160; i++){
                 scan_fuse.ranges[i]= 40.0;
             }
@@ -98,7 +91,6 @@ class FusedScan {
                 int index = (int)((angle + M_PIf32)/scan_front->angle_increment);
                 if (range_val < scan_fuse.ranges[index])
                     scan_fuse.ranges[index] = range_val;
-                //ROS_INFO("index : %d", index);
             }
             scan_fuse.header.frame_id = cloud_fuse.header.frame_id;
             scan_fuse.header.stamp    = cloud_fuse.header.stamp;
@@ -110,7 +102,6 @@ class FusedScan {
             scan_fuse.range_min       = scan_front->range_min;
             scan_fuse.scan_time       = scan_front->scan_time;
             scan_fuse.time_increment  = scan_front->time_increment;
-	    //ROS_INFO("Cloud fuse size: %ld", scan_fuse.ranges.size());
             fused_scan_pub_.publish(scan_fuse);
         }
 };
