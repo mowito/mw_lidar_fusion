@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!-- launches all the hardware nodes needed by difacto robot-->
+
+<launch>
+
+	<!-- PLC hardware config -->
+    <arg name="plc_ip_addr"     default="192.168.1.39"/>
+    <arg name="wheel_radius"    default="0.07125"/>
+    <arg name="wheel_dist"      default="0.72"/>
+    <arg name="respawn"         default="true" />
+    
+    <!-- arguments for the lidar -->
+    <arg name="lidar_ip_front"  default="192.168.1.51" />
+    <arg name="lidar_ip_back"   default="192.168.1.52" />
+    <arg name="sim"             default="false"/>
+
+    <!-- hardware-->
+
+    <!-- PLC controller-->
+    <include file="$(find mw_mitsubishi_plc_interface)/launch/plc_control.launch">
+        <arg name="plc_ip_addr"      value="$(arg plc_ip_addr)" />
+        <arg name="wheel_radius"     value="$(arg wheel_radius)" />
+        <arg name="wheel_dist"       value="$(arg wheel_dist)" />
+        <arg name="respawn"          value="$(arg respawn)"/>
+    </include>
+
+    <!-- Sick lidar launch -->
+    <include file="$(find mowito_difacto)/launch/secondary_launch/sick_safetyscanners_raw.launch">
+        <arg name="lidar_ip_front"  default="$(arg lidar_ip_front)" />
+        <arg name="lidar_ip_back"   default="$(arg lidar_ip_back)" />
+    </include>
+
+ 
+</launch>

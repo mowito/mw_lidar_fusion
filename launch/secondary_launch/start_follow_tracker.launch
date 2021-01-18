@@ -1,0 +1,68 @@
+<launch>
+
+  <arg name="global_frame" default="world"/>
+  <arg name="tracker_pose_topic" default="/tracker_pose"/>
+  <arg name="goal_pub_topic" default="/move_base_simple/goal"/>
+  <arg name="distance_from_tracker" default="1"/>
+  <arg name="tracker_goal_tolerance" default="0.005"/>
+  <arg name="dol_loop_rate_value" default="10"/>
+  <arg name="dol_goal_dist_tolerance" default = "0.1 "/>  <!-- in meters -->
+  <arg name="loop_rate_value" default="10"/>
+  <arg name="laser_frame" default="laser"/>
+  <arg name="publish_tracker" default="True"/>
+  <arg name="sim" default="false"/>
+
+  <!-- tracker sim -->
+  <!--The topic name at which the keyboard_telelop node publishes/sub its tracker velocities -->
+  <arg name="teleop_topic" default="/tracker/cmd_vel"/>
+  <!--To control the initial tracker position on the x axis-->
+  <arg name="tracker_init_pose_x" default="0.5"/>
+  <!--To control the initial tracker position on the y axis-->
+  <arg name="tracker_init_pose_y" default="0.0"/>
+
+
+
+  <!-- start rviz for visualization -->
+  <param name="use_sim_time" value="$(arg sim)"/>
+
+<!--   <node pkg="tf" type="static_transform_publisher" name="base_2_laser" args="0 0 0 3.14 0 0 base_link $(arg laser_frame) 100"/> -->
+
+ <!-- starts mm state pub which publishes the robot_pose and tracker_pose -->
+ <!-- starts robot localization node -->
+  <include file="$(find mowito_difacto)/launch/secondary_launch/start_robot_localization.launch">
+
+  </include>
+
+  <!-- start tracker sim - only if publish_tracker is set to false -->
+  <group unless="$(arg publish_tracker)">
+        <include file="$(find tracker_sim)/launch/tracker_sim_keyboard_teleop.launch">
+          <arg name= "loop_rate_value" value= "$(arg loop_rate_value)" />
+          <arg name= "teleop_sub_topic" value= "$(arg teleop_topic)" /> <!--NOTE: The teleop_publish_topic and the teleop_sub_topic should be the same-->
+          <arg name= "tracker_pose_topic" value= "$(arg tracker_pose_topic)" />
+          <arg name= "tracker_init_pose_x" value= "$(arg tracker_init_pose_x)" />
+          <arg name= "tracker_init_pose_y" value= "$(arg tracker_init_pose_y)" />
+          <arg name= "teleop_publish_topic" value= "$(arg teleop_topic)" />
+          <arg name= "map_frame" value="world"/>
+        </include>
+    </group>
+
+  <!-- follow me node (subscribes to tracker_pose and publishes to move_base_simple/goal) -->
+  <node name="goal_pub_node" type="goal_pub_node" pkg="follow_me_goal_pub" output="screen">
+    <param name= "goal_sim_loop_rate_value" value= "$(arg loop_rate_value)" />
+    <param name= "tracker_position_topic" value= "$(arg tracker_pose_topic)" />
+    <param name= "goal_pub_topic" value= "$(arg goal_pub_topic)" />
+    <param name= "distance_from_tracker" value= "$(arg distance_from_tracker)" />
+    <param name= "tracker_goal_tolerance" value= "$(arg tracker_goal_tolerance)" />
+    <param name= "map_frame" value= "$(arg global_frame)" />
+  </node>
+
+  <!--maxl controller obstacle avoidance / dol-->
+  <node pkg="mw_maxl_planner" name="mw_maxl_dol_node" type="mw_maxl_dol_node" output="screen">
+    <rosparam command="load" file="$(find mowito_difacto)/config/controller_config/mw_maxl_planner.yaml" subst_value="true"/>
+    <param name="mobileGoalTopic" value="$(arg goal_pub_topic)"/>
+    <param name="mw_maxl_planner/lookahead_goal_on_path" value="false"/>
+    <param name="dist_tolerance" value="$(arg dol_goal_dist_tolerance)"/>
+    <param name="loop_rate_value" value="$(arg dol_loop_rate_value)"/>
+  </node>
+
+</launch>

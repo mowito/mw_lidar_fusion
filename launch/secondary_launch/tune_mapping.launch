@@ -1,0 +1,24 @@
+<launch>
+
+    <arg name="sim"              value="true"/>
+    <param name="use_sim_time"   value="$(arg sim)"/>
+    <arg name="scan_topic"       default="/fused_scan" /> 
+
+    <arg name="odom_frame"       default="odom" />
+    <arg name="base_frame"       default="base_link" />
+    <arg name="map_frame"        default="map" />
+
+    <!-- arguments for the lidar -->
+    <arg name="scanner_frame_id" default="base_link"/>
+       
+    <!-- NAVIGATION -->
+    <include file="$(find mowito_difacto)/launch/secondary_launch/start_mw_mapping.launch">
+        <arg name="scan_topic"   value="$(arg scan_topic)" /> 
+        <arg name="laser_frame"  value="$(arg scanner_frame_id)" />
+        <arg name="odom_frame"   value="$(arg odom_frame)" />
+        <arg name="base_frame"   value="$(arg base_frame)" />
+        <arg name="map_frame"    value="$(arg map_frame)" />
+    </include>
+
+</launch>
+

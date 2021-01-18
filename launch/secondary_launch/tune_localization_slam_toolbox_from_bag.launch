@@ -1,0 +1,12 @@
+<launch>
+    <arg name="sim" value="true"/>
+    <param name="use_sim_time" value="$(arg sim)"/>
+    <!-- localization -->
+    <node pkg="tf" type="static_transform_publisher" name="base_2_laser" args="0 0 0 0 0 0 base_link $(arg scanner_frame_id) 100"/>
+
+
+    <node pkg="slam_toolbox" type="localization_slam_toolbox_node" name="slam_toolbox" output="screen">
+        <rosparam command="load" file="$(find mowito_difacto)/config/slam_toolbox_config/slam_toolbox_localization.yaml" />
+    </node>
+
+</launch>

@@ -1,0 +1,21 @@
+{
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "python.pythonPath": "/usr/bin/python3",
+    "python.languageServer": "Pylance",
+    "python.autoComplete.extraPaths": [
+        
+        "/usr/lib/",
+        "/usr/",
+        "/opt/ros/noetic/*", 
+        "/home/ankur/.local/lib/python3.8/site-packages/*"
+    ],
+    "cmake.configureOnOpen": true,
+    "python.analysis.extraPaths": [
+        "/usr/lib/",
+        "/usr/",
+        "/opt/ros/noetic/*",
+        "/home/ankur/.local/lib/python3.8/site-packages/*"
+    ],
+    "C_Cpp.default.defines": []
+}

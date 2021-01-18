@@ -1,0 +1,35 @@
+<launch>
+
+    <arg name="respawn" default="true"/>
+    <arg name="debug" default="false"/>
+
+    <!-- -serial port of PLC -->
+    <arg name="plc_ip_addr" default="192.168.0.123"/>
+    <!-- arguments for the lidar -->
+    <arg name="scanner_ip" default="10.0.10.9"/>
+    <arg name="scanner_frame_id" default="scan"/>
+
+    <!-- humanoid hardware -->
+    <include file="$$(find mowito_difacto)/launch/secondary_launch/start_rucha_hardware.launch">
+        <arg name="plc_ip_addr" value="$(arg plc_ip_addr)"/>
+        <arg name="scanner_ip" value="$(arg scanner_ip)"/>
+        <arg name="frame_id" default="$(arg scanner_frame_id)"/>
+    </include>
+
+    <!-- mapping node-->
+    <node pkg="slam_toolbox" type="async_slam_toolbox_node" name="slam_toolbox" output="screen">
+        <rosparam command="load" file="$(find mowito_difacto)/config/slam_toolbox_config/slam_toolbox_mapping.yaml" />
+    </node>
+
+
+
+    <!-- nav server-->
+    <include file="$(find mowito_difacto)/launch/secondary_launch/start_nav_server.launch">
+        <arg name="mission_executive_config" value="$(find mowito_difacto)/config/mission_executive_config/mission_executive_params.yaml"/>
+        <arg name="respawn" value="$(arg respawn)"/>
+        <arg name="gp_debug" value="$(arg debug)"/>
+        <arg name="ctrl_debug" value="$(arg debug)"/> 
+        <arg name="rcvr_debug" value="$(arg debug)"/>  
+    </include>
+
+</launch>
