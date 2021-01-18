@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>lidar_fusion</name>
+  <version>20.6.0</version>
+  <description>The lidar_fusion package</description>
+
+
+  <maintainer email="puru@mowito.in">puru</maintainer>
+
+
+
+  <license>Propietary</license>
+
+  <build_depend>message_generation</build_depend>
+
+  <exec_depend>message_runtime</exec_depend>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>
