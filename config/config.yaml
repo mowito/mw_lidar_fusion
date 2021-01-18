@@ -1,0 +1,3 @@
+scan_front_topic_name: "/scan/scan_front"
+scan_back_topic_name: "/scan/scan_back"
+fused_scan_topic_name: "/scan/fused_scan"

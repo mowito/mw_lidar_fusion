@@ -13,20 +13,33 @@
 class FusedScan {
 
   public:
-        FusedScan(ros::NodeHandle nh) : nh_(nh), 
-                                        scan_front_(nh_, "sick_safetyscanners/scan_front", 20),
-                                        scan_back_(nh_, "sick_safetyscanners/scan_back", 20),
+        FusedScan(ros::NodeHandle nh) : nh_(nh),
                                         sync_(MySyncPolicy(20), scan_front_, scan_back_)
-        {
-            ROS_INFO("I'm in Constructor");
-           
+        {   
+            if (!nh_.param<std::string>("scan_front_topic_name",
+                                                scan_front_topic_name_,
+                                                "/scan/scan_front")) {
+                ROS_WARN_STREAM("Did not load scan_front_topic_name. Standard value is: " << scan_front_topic_name_);
+            }
+            if (!nh_.param<std::string>("scan_back_topic_name",
+                                                scan_back_topic_name_,
+                                                "/scan/scan_back")) {
+                ROS_WARN_STREAM("Did not load scan_back_topic_name. Standard value is: " << scan_back_topic_name_);
+            }
+            if (!nh_.param<std::string>("fused_scan_topic_name",
+                                                fused_scan_topic_name_,
+                                                "/scan/fused_scan")) {
+                ROS_WARN_STREAM("Did not load fused_scan_topic_name. Standard value is: " << fused_scan_topic_name_);
+            }
+
+            scan_front_.subscribe(nh_, scan_front_topic_name_, 20);
+            scan_back_.subscribe(nh_, scan_back_topic_name_, 20);
+
             //coordinate callback for both laser scan message and a non_leg_clusters message
             sync_.registerCallback(boost::bind(&FusedScan::fused_scan_callback, this, _1, _2));
-            
+
             //publish fused_scan to scan topic
-            fused_scan_pub_ = nh_.advertise<sensor_msgs::LaserScan> ("/fused_scan", 20);
-            scan_front_pub_ = nh_.advertise<sensor_msgs::PointCloud>("/scan_front_pcl", 20);
-            scan_back_pub_  = nh_.advertise<sensor_msgs::PointCloud>("/scan_back_pcl", 20);
+            fused_scan_pub_ = nh_.advertise<sensor_msgs::LaserScan> (fused_scan_topic_name_, 20);
             
             for (int i=0 ; i < 2160; i++){
                 scan_fuse.ranges.push_back(40.0);
@@ -45,11 +58,13 @@ class FusedScan {
         typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> MySyncPolicy;
         message_filters::Synchronizer<MySyncPolicy> sync_;    
         ros::Publisher fused_scan_pub_;
-        ros::Publisher scan_front_pub_;
-        ros::Publisher scan_back_pub_;
 
         sensor_msgs::PointCloud cloud_fuse;
         sensor_msgs::LaserScan scan_fuse;
+
+        std::string scan_front_topic_name_;
+        std::string scan_back_topic_name_;
+        std::string fused_scan_topic_name_;
 
         //callback function
         void fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
@@ -108,11 +123,8 @@ class FusedScan {
 
 int main(int argc, char **argv){
 
-    ros::init(argc, argv, "fused_scan");
+    ros::init(argc, argv, "lidar_fusion_node");
     ros::NodeHandle nh;
     FusedScan fs(nh);
     ros::spin();
 }
-
-
-

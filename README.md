@@ -13,4 +13,4 @@ source ./devel/setup.bash
 ```
 
 You can then launch different configurations by:
-`roslaunch mowito_difacto <file_name>.launch`
+`roslaunch lidar_fusion lidar_fusion.launch`

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>mowito_difacto</name>
+  <name>lidar_fusion</name>
   <version>20.6.0</version>
-  <description>The mowito_difacto package</description>
+  <description>The lidar_fusion package</description>
 
 
   <maintainer email="puru@mowito.in">puru</maintainer>
