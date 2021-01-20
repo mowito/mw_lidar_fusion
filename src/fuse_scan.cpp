@@ -44,6 +44,9 @@ class FusedScan {
             for (int i=0 ; i < 2160; i++){
                 scan_fuse.ranges.push_back(40.0);
             }
+            for (int i=0 ; i < 2160; i++){
+                scan_fuse.intensities.push_back(100.0);
+            }
         }
 
     private:
