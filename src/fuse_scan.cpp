@@ -31,6 +31,12 @@ class FusedScan {
                                                 "/scan/fused_scan")) {
                 ROS_WARN_STREAM("Did not load fused_scan_topic_name. Standard value is: " << fused_scan_topic_name_);
             }
+            if (!nh_.param("robot_width", robot_width_, 0.6)) {
+                ROS_WARN_STREAM("Did not load robot_width. Standard value is: " << robot_width_);
+            }
+            if (!nh_.param("robot_length", robot_length_, 0.65)) {
+                ROS_WARN_STREAM("Did not load robot_length. Standard value is: " << robot_length_);
+            }
 
             scan_front_.subscribe(nh_, scan_front_topic_name_, 20);
             scan_back_.subscribe(nh_, scan_back_topic_name_, 20);
@@ -69,6 +75,9 @@ class FusedScan {
         std::string scan_back_topic_name_;
         std::string fused_scan_topic_name_;
 
+        double robot_length_;
+        double robot_width_;
+
         //callback function
         void fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back)
@@ -104,11 +113,17 @@ class FusedScan {
                 scan_fuse.ranges[i]= 40.0;
             }
             for (long int i = 0; i < cloud_fuse.points.size(); i++){
+
+                if ((cloud_fuse.points[i].x > -robot_length_/2 && cloud_fuse.points[i].x <= robot_length_/2) ||
+                    (cloud_fuse.points[i].y > -robot_width_/2 && cloud_fuse.points[i].y <= robot_width_/2)){
+                        continue;
+                    }
                 float angle = atan2f32(cloud_fuse.points[i].y, cloud_fuse.points[i].x);
                 float range_val = hypotf32(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
                 int index = (int)((angle + M_PIf32)/scan_front->angle_increment);
                 if (range_val < scan_fuse.ranges[index])
                     scan_fuse.ranges[index] = range_val;
+                
             }
             scan_fuse.header.frame_id = cloud_fuse.header.frame_id;
             scan_fuse.header.stamp    = cloud_fuse.header.stamp;
