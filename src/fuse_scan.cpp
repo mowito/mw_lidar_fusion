@@ -214,13 +214,6 @@ class FusedScan {
                     continue;
                 }
 
-<<<<<<< HEAD
-=======
-                if ((cloud_fuse.points[i].x > -robot_length_/2 && cloud_fuse.points[i].x < robot_length_/2) &&
-                    (cloud_fuse.points[i].y > -robot_width_/2 && cloud_fuse.points[i].y < robot_width_/2)){
-                        continue;
-                    }
->>>>>>> 609b06e762e2752735373d790c58cce77521e193
                 float angle = atan2f32(cloud_fuse.points[i].y, cloud_fuse.points[i].x);
                 float range_val = hypotf32(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
                 int index = (int)((angle + M_PIf32)/scan_front->angle_increment);
