@@ -1,5 +1,5 @@
 scan_front_topic_name: "/scan"
 scan_back_topic_name: "/scan_rplidar"
 fused_scan_topic_name: "/fused_scan_crop"
-robot_width: 0.6
-robot_length: 0.65
+robot_width: 0.6 # in the lateral dirctins
+robot_length: 0.68 # in the direction of the motion
