@@ -1,8 +1,14 @@
 scan_front_topic_name: "/scan"
 scan_back_topic_name: "/scan_rplidar"
+<<<<<<< HEAD
 fused_scan_topic_name: "/fused_scan_temp"
 robot_width: 0.6
 robot_length: 0.65
 base_link: "base_link"
 polygon_x: [0.3, 0.3, -0.3, -0.3]
 polygon_y: [0.325, -0.325, 0.325, -0.325]
+=======
+fused_scan_topic_name: "/fused_scan_crop"
+robot_width: 0.6 # in the lateral dirctins
+robot_length: 0.68 # in the direction of the motion
+>>>>>>> 609b06e762e2752735373d790c58cce77521e193
