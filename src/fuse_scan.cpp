@@ -114,7 +114,7 @@ class FusedScan {
             }
             for (long int i = 0; i < cloud_fuse.points.size(); i++){
 
-                if ((cloud_fuse.points[i].x > -robot_length_/2 && cloud_fuse.points[i].x <= robot_length_/2) ||
+                if ((cloud_fuse.points[i].x > -robot_length_/2 && cloud_fuse.points[i].x <= robot_length_/2) &&
                     (cloud_fuse.points[i].y > -robot_width_/2 && cloud_fuse.points[i].y <= robot_width_/2)){
                         continue;
                     }
