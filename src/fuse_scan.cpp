@@ -5,6 +5,8 @@
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
 #include <laser_geometry/laser_geometry.h>
+#include <xmlrpcpp/XmlRpcValue.h> 
+
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -96,39 +98,40 @@ class FusedScan {
         FusedScan(ros::NodeHandle nh) : nh_(nh),
                                         sync_(MySyncPolicy(20), scan_front_, scan_back_)
         {   
-            std::vector<double> polygon_x, polygon_y;
+            XmlRpc::XmlRpcValue polygon;
             if (!nh_.param<std::string>("scan_front_topic_name",
                                                 scan_front_topic_name_,
                                                 "/scan/scan_front")) {
-                ROS_WARN_STREAM("Did not load scan_front_topic_name. Standard value is: " << scan_front_topic_name_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load scan_front_topic_name. Standard value is: " << scan_front_topic_name_);
             }
             if (!nh_.param<std::string>("scan_back_topic_name",
                                                 scan_back_topic_name_,
                                                 "/scan/scan_back")) {
-                ROS_WARN_STREAM("Did not load scan_back_topic_name. Standard value is: " << scan_back_topic_name_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load scan_back_topic_name. Standard value is: " << scan_back_topic_name_);
             }
             if (!nh_.param<std::string>("fused_scan_topic_name",
                                                 fused_scan_topic_name_,
                                                 "/scan/fused_scan")) {
-                ROS_WARN_STREAM("Did not load fused_scan_topic_name. Standard value is: " << fused_scan_topic_name_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load fused_scan_topic_name. Standard value is: " << fused_scan_topic_name_);
             }
             if (!nh_.param("robot_width", robot_width_, 0.6)) {
-                ROS_WARN_STREAM("Did not load robot_width. Standard value is: " << robot_width_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_width. Standard value is: " << robot_width_);
             }
             if (!nh_.param("robot_length", robot_length_, 0.65)) {
-                ROS_WARN_STREAM("Did not load robot_length. Standard value is: " << robot_length_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_length. Standard value is: " << robot_length_);
             }
             if (!nh_.param<std::string>("base_link",
                                                 base_link_,
                                                 "base_link")) {
-                ROS_WARN_STREAM("Did not load base_link. Standard value is: " << base_link_);
+                ROS_WARN_STREAM("[LIDAR FUSION] Did not load base_link. Standard value is: " << base_link_);
             }
-            nh_.getParam("polygon_x", polygon_x);
-            nh_.getParam("polygon_y", polygon_y);
+            nh_.getParam("polygon", polygon);
 
-            for (size_t i = 0; i < std::min(polygon_x.size(), polygon_y.size()); i++) {
-                Point p(polygon_x[i], polygon_y[i]);
-                polygon_.push_back(p);
+            if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+                for (int i = 0; i < polygon.size(); i++) {
+                    Point vertex(polygon[i][0], polygon[i][1]);
+                    polygon_.push_back(vertex);
+                }
             }
 
             scan_front_.subscribe(nh_, scan_front_topic_name_, 20);
@@ -178,24 +181,24 @@ class FusedScan {
         void fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back)
         {
-            if (!tflistener_.waitForTransform(scan_front->header.frame_id, "base_link", 
+            if (!tflistener_.waitForTransform(scan_front->header.frame_id, base_link_, 
                 scan_front->header.stamp + ros::Duration().fromSec(scan_front->ranges.size()*scan_front->time_increment), 
                 ros::Duration(3.0))) {
                     return;
             }
             
-            if (!tflistener_.waitForTransform(scan_back->header.frame_id, "base_link", 
+            if (!tflistener_.waitForTransform(scan_back->header.frame_id, base_link_, 
                 scan_back->header.stamp + ros::Duration().fromSec(scan_back->ranges.size()*scan_back->time_increment), 
                 ros::Duration(3.0))) {
                     return;
             }
             //convert scan_front to pointcloud
             sensor_msgs::PointCloud cloud_front;
-            projector_.transformLaserScanToPointCloud("base_link", *scan_front, cloud_front, tflistener_);
+            projector_.transformLaserScanToPointCloud(base_link_, *scan_front, cloud_front, tflistener_);
             
             //convert scan_Back to pointcloud    
             sensor_msgs::PointCloud cloud_back;
-            projector_.transformLaserScanToPointCloud("base_link", *scan_back, cloud_back, tflistener_);
+            projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
 
             cloud_fuse.header.frame_id = cloud_front.header.frame_id;
             cloud_fuse.header.seq      = cloud_front.header.seq;
@@ -209,8 +212,8 @@ class FusedScan {
                 scan_fuse.ranges[i]= 40.0;
             }
             for (long int i = 0; i < cloud_fuse.points.size(); i++){
-                Point p(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
-                if (isInside(polygon_, p)) {
+                Point lidar_pt(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
+                if (isInside(polygon_, lidar_pt)) {
                     continue;
                 }
 
@@ -236,7 +239,6 @@ class FusedScan {
 };
 
 int main(int argc, char **argv){
-
     ros::init(argc, argv, "lidar_fusion_node");
     ros::NodeHandle nh;
     FusedScan fs(nh);

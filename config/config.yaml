@@ -4,5 +4,4 @@ fused_scan_topic_name: "/fused_scan_temp"
 robot_width: 0.6
 robot_length: 0.65
 base_link: "base_link"
-polygon_x: [0.3, 0.3, -0.3, -0.3]
-polygon_y: [0.325, -0.325, 0.325, -0.325]
+polygon: [[0.3, 0.325], [0.3, -0.325], [-0.3, 0.325], [-0.3, -0.325]]
