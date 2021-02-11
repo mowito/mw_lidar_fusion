@@ -97,7 +97,7 @@ class FusedScan {
   FusedScan(ros::NodeHandle nh);
   
   private:
-  void fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
+  void fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back);
 
   void mergePointClouds(sensor_msgs::PointCloud& cloud_front,

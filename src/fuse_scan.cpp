@@ -43,7 +43,7 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
     scan_back_.subscribe(nh_, scan_back_topic_name_, 20);
 
     //coordinate callback for both laser scan message and a non_leg_clusters message
-    sync_.registerCallback(boost::bind(&FusedScan::fused_scan_callback, this, _1, _2));
+    sync_.registerCallback(boost::bind(&FusedScan::fusedScanCallback, this, _1, _2));
 
     //publish fused_scan to scan topic
     fused_scan_pub_ = nh_.advertise<sensor_msgs::LaserScan> (fused_scan_topic_name_, 20);
@@ -57,7 +57,7 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 }
 
 //callback function
-void FusedScan::fused_scan_callback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
+void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
                                     const sensor_msgs::LaserScan::ConstPtr& scan_back)
 {
     if (!tflistener_.waitForTransform(scan_front->header.frame_id, base_link_, 
