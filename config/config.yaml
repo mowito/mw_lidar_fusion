@@ -5,3 +5,4 @@ robot_width: 0.6
 robot_length: 0.65
 base_link: "base_link"
 polygon: [[0.3, 0.325], [0.3, -0.325], [-0.3, 0.325], [-0.3, -0.325]]
+single_lidar: false

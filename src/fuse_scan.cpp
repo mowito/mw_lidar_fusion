@@ -31,7 +31,14 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load base_link. Standard value is: " << base_link_);
     }
     nh_.getParam("polygon", polygon);
+    if (!nh_.param("single_lidar", single_lidar_, false)) {
+        ROS_WARN_STREAM("[LIDAR FUSION] Did not load single_lidar status. Standard value is: " << single_lidar_);
+    }
 
+    if (single_lidar_) {
+        scan_back_topic_name_ = scan_front_topic_name_;
+    }
+    
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
         for (int i = 0; i < polygon.size(); i++) {
             Point vertex(polygon[i][0], polygon[i][1]);

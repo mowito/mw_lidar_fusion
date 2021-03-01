@@ -125,6 +125,7 @@ class FusedScan {
     std::string scan_front_topic_name_;
     std::string scan_back_topic_name_;
     std::string fused_scan_topic_name_;
+    bool single_lidar_;
 
     std::string base_link_;
     std::vector<Point> polygon_;
