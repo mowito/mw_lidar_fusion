@@ -81,8 +81,8 @@ bool isInside(std::vector<Point> &polygon, Point p) {
         int next = (i+1)%polygon.size(); 
 
         if (doIntersect(polygon[i], polygon[next], p, extreme)) {
-            if (orientation(polygon[i], p, polygon[next]) == 0) 
-            return onSegment(polygon[i], p, polygon[next]); 
+            if (orientation(polygon[i], p, polygon[next]) == 0)
+              return onSegment(polygon[i], p, polygon[next]); 
  
             count++; 
         } 

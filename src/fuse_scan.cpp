@@ -31,12 +31,13 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load base_link. Standard value is: " << base_link_);
     }
     nh_.getParam("polygon", polygon);
-    if (!nh_.param("single_lidar", single_lidar_, false)) {
-        ROS_WARN_STREAM("[LIDAR FUSION] Did not load single_lidar status. Standard value is: " << single_lidar_);
-    }
 
-    if (single_lidar_) {
-        scan_back_topic_name_ = scan_front_topic_name_;
+    if (scan_front_topic_name_ == scan_back_topic_name_) {
+
+        single_lidar_ = true;
+    } else {
+
+        single_lidar_ = false;
     }
     
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
@@ -84,7 +85,9 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_f
             
     //convert scan_Back to pointcloud
     sensor_msgs::PointCloud cloud_back;
-    projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
+    
+    if(!single_lidar_)
+        projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
 
     mergePointClouds(cloud_front, cloud_back, scan_front);
     sendVisualization(scan_front);
@@ -98,16 +101,24 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
     cloud_fuse.header.stamp    = cloud_front.header.stamp;
 
     //merge the point clouds
-    cloud_fuse.points = cloud_back.points;
-    cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_front.points.begin(), cloud_front.points.end());
+    cloud_fuse.points = cloud_front.points;
+    
+    if(!single_lidar_)
+        cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_back.points.begin(), cloud_back.points.end());
 	
     for (int i = 0 ; i < 2160; i++){
         scan_fuse.ranges[i]= 40.0;
     }
     for (long int i = 0; i < cloud_fuse.points.size(); i++){
-        Point lidar_pt(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
-        if (isInside(polygon_, lidar_pt)) {
+
+        //Point lidar_pt(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
+        /*if (isInside(polygon_, lidar_pt)) {
             continue;
+        }*/
+
+        if ((cloud_fuse.points[i].x < robot_length_/2) && (cloud_fuse.points[i].x > -robot_length_/2) &&
+            (cloud_fuse.points[i].y < robot_width_/2) && (cloud_fuse.points[i].y > -robot_width_/2)) {
+                continue;
         }
 
         float angle = atan2f32(cloud_fuse.points[i].y, cloud_fuse.points[i].x);
