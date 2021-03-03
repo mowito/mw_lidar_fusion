@@ -81,8 +81,8 @@ bool isInside(std::vector<Point> &polygon, Point p) {
         int next = (i+1)%polygon.size(); 
 
         if (doIntersect(polygon[i], polygon[next], p, extreme)) {
-            if (orientation(polygon[i], p, polygon[next]) == 0) 
-            return onSegment(polygon[i], p, polygon[next]); 
+            if (orientation(polygon[i], p, polygon[next]) == 0)
+              return onSegment(polygon[i], p, polygon[next]); 
  
             count++; 
         } 
@@ -125,6 +125,7 @@ class FusedScan {
     std::string scan_front_topic_name_;
     std::string scan_back_topic_name_;
     std::string fused_scan_topic_name_;
+    bool single_lidar_;
 
     std::string base_link_;
     std::vector<Point> polygon_;
