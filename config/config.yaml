@@ -1,8 +1,9 @@
 scan_front_topic_name: "/scan"
 scan_back_topic_name: "/scan"
-fused_scan_topic_name: "/fused_scan_temp"
+fused_scan_topic_name: "/fused_scan"
 robot_width: 10.0
 robot_length: 10.0
+crop_x_offset: -0.1 
+crop_y_offset: 0.0
 base_link: "base_link"
-polygon: [[10.0, 10.0], [10.0, -10.0], [-10.0, 10.0], [-10.0, -10.0]]
-
+polygon: [[0.5, 0.5], [0.5, -0.5], [-0.5, 0.5], [-0.5, -0.5]]

@@ -132,4 +132,6 @@ class FusedScan {
 
     double robot_length_;
     double robot_width_;
+    double x_offset_;
+    double y_offset_;
 };

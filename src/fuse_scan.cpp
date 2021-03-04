@@ -30,6 +30,12 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
                                 "base_link")) {
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load base_link. Standard value is: " << base_link_);
     }
+    if (!nh_.param("crop_x_offset", x_offset_, 0.0)) {
+        ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_x_offset. Standard value is: " << robot_length_);
+    }
+    if (!nh_.param("crop_y_offset", y_offset_, 0.0)) {
+        ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_y_offset. Standard value is: " << robot_length_);
+    }
     nh_.getParam("polygon", polygon);
 
     if (scan_front_topic_name_ == scan_back_topic_name_) {
@@ -116,8 +122,8 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
             continue;
         }*/
 
-        if ((cloud_fuse.points[i].x < robot_length_/2) && (cloud_fuse.points[i].x > -robot_length_/2) &&
-            (cloud_fuse.points[i].y < robot_width_/2) && (cloud_fuse.points[i].y > -robot_width_/2)) {
+        if ((cloud_fuse.points[i].x < (robot_length_/2 + x_offset_)) && (cloud_fuse.points[i].x > (-robot_length_/2 + x_offset_)) &&
+            (cloud_fuse.points[i].y < (robot_width_/2 + y_offset_)) && (cloud_fuse.points[i].y > (-robot_width_/2 + y_offset_))) {
                 continue;
         }
 
