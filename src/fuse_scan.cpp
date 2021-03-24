@@ -74,7 +74,7 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front,
                                     const sensor_msgs::LaserScan::ConstPtr& scan_back)
 {
-  
+
     if (!tflistener_.waitForTransform(scan_front->header.frame_id, base_link_,
         scan_front->header.stamp + ros::Duration().fromSec(scan_front->ranges.size()*scan_front->time_increment),
         ros::Duration(3.0))) {
@@ -104,14 +104,15 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_f
     {
       if(!single_lidar_)
           projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
+          
+      mergePointClouds(cloud_front, cloud_back, scan_front);
+      sendVisualization(scan_front);
     }
     catch ( const tf2::TransformException& e )
     {
       ROS_WARN_STREAM("[LIDAR FUSION] "<< e.what());
     }
 
-    mergePointClouds(cloud_front, cloud_back, scan_front);
-    sendVisualization(scan_front);
 }
 
 void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
