@@ -2,7 +2,7 @@
 
 FusedScan::FusedScan(ros::NodeHandle nh) :
 nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
-{   
+{
     XmlRpc::XmlRpcValue polygon;
     if (!nh_.param<std::string>("scan_front_topic_name",
                                 scan_front_topic_name_,
@@ -45,7 +45,7 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 
         single_lidar_ = false;
     }
-    
+
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
         for (int i = 0; i < polygon.size(); i++) {
             Point vertex(polygon[i][0], polygon[i][1]);
@@ -61,7 +61,7 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 
     //publish fused_scan to scan topic
     fused_scan_pub_ = nh_.advertise<sensor_msgs::LaserScan> (fused_scan_topic_name_, 20);
-            
+
     for (int i = 0 ; i < 2160; i++){
         scan_fuse.ranges.push_back(40.0);
     }
@@ -71,29 +71,44 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 }
 
 //callback function
-void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, 
+void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front,
                                     const sensor_msgs::LaserScan::ConstPtr& scan_back)
 {
-    if (!tflistener_.waitForTransform(scan_front->header.frame_id, base_link_, 
-        scan_front->header.stamp + ros::Duration().fromSec(scan_front->ranges.size()*scan_front->time_increment), 
+  
+    if (!tflistener_.waitForTransform(scan_front->header.frame_id, base_link_,
+        scan_front->header.stamp + ros::Duration().fromSec(scan_front->ranges.size()*scan_front->time_increment),
         ros::Duration(3.0))) {
         return;
     }
-            
-    if (!tflistener_.waitForTransform(scan_back->header.frame_id, base_link_, 
-        scan_back->header.stamp + ros::Duration().fromSec(scan_back->ranges.size()*scan_back->time_increment), 
+
+    if (!tflistener_.waitForTransform(scan_back->header.frame_id, base_link_,
+        scan_back->header.stamp + ros::Duration().fromSec(scan_back->ranges.size()*scan_back->time_increment),
         ros::Duration(3.0))) {
         return;
     }
     //convert scan_front to pointcloud
     sensor_msgs::PointCloud cloud_front;
-    projector_.transformLaserScanToPointCloud(base_link_, *scan_front, cloud_front, tflistener_);
-            
+    try
+    {
+      projector_.transformLaserScanToPointCloud(base_link_, *scan_front, cloud_front, tflistener_);
+    }
+    catch ( const tf2::TransformException& e )
+    {
+      ROS_WARN_STREAM("[LIDAR FUSION] "<<e.what());
+    }
+
     //convert scan_Back to pointcloud
     sensor_msgs::PointCloud cloud_back;
-    
-    if(!single_lidar_)
-        projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
+
+    try
+    {
+      if(!single_lidar_)
+          projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
+    }
+    catch ( const tf2::TransformException& e )
+    {
+      ROS_WARN_STREAM("[LIDAR FUSION] "<< e.what());
+    }
 
     mergePointClouds(cloud_front, cloud_back, scan_front);
     sendVisualization(scan_front);
@@ -108,10 +123,10 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
 
     //merge the point clouds
     cloud_fuse.points = cloud_front.points;
-    
+
     if(!single_lidar_)
         cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_back.points.begin(), cloud_back.points.end());
-	
+
     for (int i = 0 ; i < 2160; i++){
         scan_fuse.ranges[i]= 40.0;
     }
@@ -132,7 +147,7 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
         int index = (int)((angle + M_PIf32)/scan_front->angle_increment);
         if (range_val < scan_fuse.ranges[index])
             scan_fuse.ranges[index] = range_val;
-                
+
     }
 }
 
