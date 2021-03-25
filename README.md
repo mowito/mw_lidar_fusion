@@ -4,6 +4,7 @@ mw_lidar_fusion is a tool for fusing LiDAR data from two sources.
 
 ## Build instructions
 ```
+sudo apt-get install libcgal-dev
 mkdir -p mowito_ws/src && cd mowito_ws/src
 git clone git@github.com:mowito/mw_lidar_fusion.git
 cd ..

@@ -19,24 +19,27 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
                                 "/scan/fused_scan")) {
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load fused_scan_topic_name. Standard value is: " << fused_scan_topic_name_);
     }
-    if (!nh_.param("robot_width", robot_width_, 0.6)) {
-        ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_width. Standard value is: " << robot_width_);
-    }
-    if (!nh_.param("robot_length", robot_length_, 0.65)) {
-        ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_length. Standard value is: " << robot_length_);
-    }
+
     if (!nh_.param<std::string>("base_link",
                                 base_link_,
                                 "base_link")) {
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load base_link. Standard value is: " << base_link_);
     }
-    if (!nh_.param("crop_x_offset", x_offset_, 0.0)) {
-        ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_x_offset. Standard value is: " << robot_length_);
+    if (!nh_.getParam("polygon", polygon)) {
+        ROS_ERROR_STREAM("[LIDAR FUSION] Did not load polygon");
     }
-    if (!nh_.param("crop_y_offset", y_offset_, 0.0)) {
-        ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_y_offset. Standard value is: " << robot_length_);
-    }
-    nh_.getParam("polygon", polygon);
+    // if (!nh_.param("robot_width", robot_width_, 0.6)) {
+    //     ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_width. Standard value is: " << robot_width_);
+    // }
+    // if (!nh_.param("robot_length", robot_length_, 0.65)) {
+    //     ROS_WARN_STREAM("[LIDAR FUSION] Did not load robot_length. Standard value is: " << robot_length_);
+    // }
+    // if (!nh_.param("crop_x_offset", x_offset_, 0.0)) {
+    //     ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_x_offset. Standard value is: " << robot_length_);
+    // }
+    // if (!nh_.param("crop_y_offset", y_offset_, 0.0)) {
+    //     ROS_WARN_STREAM("[LIDAR FUSION] Did not load crop_y_offset. Standard value is: " << robot_length_);
+    // }
 
     if (scan_front_topic_name_ == scan_back_topic_name_) {
 
@@ -48,10 +51,17 @@ nh_(nh), sync_(MySyncPolicy(20), scan_front_, scan_back_)
 
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
         for (int i = 0; i < polygon.size(); i++) {
-            Point vertex(polygon[i][0], polygon[i][1]);
-                polygon_.push_back(vertex);
+                polygon_.push_back(Point(polygon[i][0], polygon[i][1]));
             }
         }
+
+    // check if convex polygon
+    typedef CGAL::Polygon_2<K> Polygon_2;
+    if(!Polygon_2(polygon_.begin(),polygon_.end()).is_convex()){
+      ROS_ERROR_STREAM("[LIDAR FUSION] Polygon is invalid");
+      polygon_.clear();
+    }
+
 
     scan_front_.subscribe(nh_, scan_front_topic_name_, 20);
     scan_back_.subscribe(nh_, scan_back_topic_name_, 20);
@@ -104,7 +114,7 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_f
     {
       if(!single_lidar_)
           projector_.transformLaserScanToPointCloud(base_link_, *scan_back, cloud_back, tflistener_);
-          
+
       mergePointClouds(cloud_front, cloud_back, scan_front);
       sendVisualization(scan_front);
     }
@@ -133,14 +143,15 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_front,
     }
     for (long int i = 0; i < cloud_fuse.points.size(); i++){
 
-        //Point lidar_pt(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
-        /*if (isInside(polygon_, lidar_pt)) {
-            continue;
-        }*/
+        // if ((cloud_fuse.points[i].x < (robot_length_/2 + x_offset_)) && (cloud_fuse.points[i].x > (-robot_length_/2 + x_offset_)) &&
+        //     (cloud_fuse.points[i].y < (robot_width_/2 + y_offset_)) && (cloud_fuse.points[i].y > (-robot_width_/2 + y_offset_))) {
+        //         continue;
+        // }
 
-        if ((cloud_fuse.points[i].x < (robot_length_/2 + x_offset_)) && (cloud_fuse.points[i].x > (-robot_length_/2 + x_offset_)) &&
-            (cloud_fuse.points[i].y < (robot_width_/2 + y_offset_)) && (cloud_fuse.points[i].y > (-robot_width_/2 + y_offset_))) {
-                continue;
+        // check if point inside polygon
+        Point cloud_point = Point(cloud_fuse.points[i].x,cloud_fuse.points[i].y);
+        if(CGAL::bounded_side_2(polygon_.begin(), polygon_.end(), cloud_point, K()) == CGAL::ON_BOUNDED_SIDE){
+          continue;
         }
 
         float angle = atan2f32(cloud_fuse.points[i].y, cloud_fuse.points[i].x);

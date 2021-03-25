@@ -19,8 +19,13 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+## CGAL
+find_package(CGAL REQUIRED COMPONENTS Core)
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -55,7 +60,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Odrive_CPS.msg
 # )
 
 # generate_messages(
@@ -131,7 +135,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/mowito_difacto.cpp
+#   src/${PROJECT_NAME}/.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -161,6 +165,7 @@ add_executable(
 target_link_libraries(
   lidar_fusion
   ${catkin_LIBRARIES}
+  CGAL::CGAL
 )
 #############
 ## Install ##
@@ -172,8 +177,6 @@ target_link_libraries(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 # catkin_install_python(PROGRAMS
-#   scripts/odrive_cps_pub.py
-# 	scripts/odrive_ctrl.py
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
