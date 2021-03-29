@@ -2,4 +2,6 @@ scan_front_topic_name: "/scan"
 scan_back_topic_name: "/scan_rplidar"
 fused_scan_topic_name: "/fused_scan_temp"
 base_link: "base_link"
-polygon: [[-0.5, 0.5], [0.5, 0.5], [0.5, -0.5], [-0.5, -0.5]] #in float
+polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
+# polygon: [[2.0, -2.0],[4.0,0.0],[2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]] #in float
+polygon_topic_name: "/lidar_crop_polygon"

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(lidar_fusion)
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE true)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -82,10 +83,10 @@ find_package(CGAL REQUIRED COMPONENTS Core)
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   geometry_msgs
- )
+# generate_messages(
+#   DEPENDENCIES
+#   geometry_msgs
+# )
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################

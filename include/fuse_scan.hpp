@@ -9,8 +9,10 @@
 #include <CGAL/Polygon_2_algorithms.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Polygon_2.h>
-
-
+#include <geometry_msgs/PolygonStamped.h>
+#include <geometry_msgs/Point32.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <tf2/utils.h>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -43,6 +45,8 @@ class FusedScan {
     typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> MySyncPolicy;
     message_filters::Synchronizer<MySyncPolicy> sync_;
     ros::Publisher fused_scan_pub_;
+    ros::Publisher polygon_pub_;
+    ros::Subscriber odom_sub_;
 
     sensor_msgs::PointCloud cloud_back;
     sensor_msgs::PointCloud cloud_fuse;
@@ -51,6 +55,7 @@ class FusedScan {
     std::string scan_front_topic_name_;
     std::string scan_back_topic_name_;
     std::string fused_scan_topic_name_;
+    std::string polygon_topic_name_;
     bool single_lidar_;
 
     std::string base_link_;
@@ -58,7 +63,7 @@ class FusedScan {
     typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
     typedef K::Point_2 Point;
     std::vector<Point> polygon_;
+    geometry_msgs::PolygonStamped polygon_viz_;
 
-    // double x_offset_;
-    // double y_offset_;
+
 };
