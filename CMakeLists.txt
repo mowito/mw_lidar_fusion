@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(lidar_fusion)
+set(CGAL_DO_NOT_WARN_ABOUT_CMAKE_BUILD_TYPE true)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -19,8 +20,13 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
 )
 
+## CGAL
+find_package(CGAL REQUIRED COMPONENTS Core)
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -55,7 +61,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Odrive_CPS.msg
 # )
 
 # generate_messages(
@@ -78,10 +83,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
- generate_messages(
-   DEPENDENCIES
-   geometry_msgs
- )
+# generate_messages(
+#   DEPENDENCIES
+#   geometry_msgs
+# )
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
 ################################################
@@ -131,7 +136,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/mowito_difacto.cpp
+#   src/${PROJECT_NAME}/.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -161,6 +166,7 @@ add_executable(
 target_link_libraries(
   lidar_fusion
   ${catkin_LIBRARIES}
+  CGAL::CGAL
 )
 #############
 ## Install ##
@@ -172,8 +178,6 @@ target_link_libraries(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 # catkin_install_python(PROGRAMS
-#   scripts/odrive_cps_pub.py
-# 	scripts/odrive_ctrl.py
 #   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 # )
 
