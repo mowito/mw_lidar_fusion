@@ -113,6 +113,7 @@ scan_sync_(ScanPolicy(20), scan_front_, scan_back_), pointcloud_sync_(PointCloud
     //publish fused_scan to scan topic
     fused_scan_pub_ = nh_.advertise<sensor_msgs::LaserScan> (fused_scan_topic_name_, 20);
     polygon_pub_ = nh_.advertise<geometry_msgs::PolygonStamped> (polygon_topic_name_, 5);
+    fused_pointcloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2> ("/fusedpc", 20);
 
     for (int i = 0 ; i < 2160; i++){
         scan_fuse.ranges.push_back(40.0);
@@ -175,8 +176,8 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_f
     }
 }
 
-void FusedScan::fusedCloudCallback(const sensor_msgs::PointCloud::ConstPtr& cloud_front,
-                                    const sensor_msgs::PointCloud::ConstPtr& cloud_back)
+void FusedScan::fusedCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_front,
+                                    const sensor_msgs::PointCloud2::ConstPtr& cloud_back)
 {
 
     std::cout << "fused cloud CB" << '\n';
@@ -191,24 +192,29 @@ void FusedScan::fusedCloudCallback(const sensor_msgs::PointCloud::ConstPtr& clou
         ros::Duration(3.0))) {
         return;
     }
-    //convert scan_front to pointcloud
-    // sensor_msgs::PointCloud cloud_;
+    //tranform to base_link frame
+    sensor_msgs::PointCloud2 tf_cloud_front, tf_cloud_back;
+    pcl_ros::transformPointCloud (base_link_, *cloud_front, tf_cloud_front, tflistener_);
+    pcl_ros::transformPointCloud (base_link_, *cloud_back, tf_cloud_back, tflistener_);
+    sensor_msgs::PointCloud cloud_temp;
 
     cloud_fuse.header.frame_id = cloud_front->header.frame_id;
     cloud_fuse.header.seq      = cloud_front->header.seq;
     cloud_fuse.header.stamp    = cloud_front->header.stamp;
     //merge the point clouds
-    cloud_fuse.points = cloud_front->points;
-    if(!single_pointcloud_)
-        cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_back->points.begin(), cloud_back->points.end());
-
+    convertPointCloud2ToPointCloud(tf_cloud_front, cloud_temp);
+    cloud_fuse.points = cloud_temp.points;
+    if(!single_pointcloud_){
+        convertPointCloud2ToPointCloud(tf_cloud_back, cloud_temp);
+        cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_temp.points.begin(), cloud_temp.points.end());
+}
     mergePointClouds(cloud_fuse, 1.0);
     // sendVisualization(scan_front);
 
 }
 
 void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, const sensor_msgs::LaserScan::ConstPtr& scan_back,
-                                    const sensor_msgs::PointCloud::ConstPtr& cloud_front, const sensor_msgs::PointCloud::ConstPtr& cloud_back)
+                                    const sensor_msgs::PointCloud2::ConstPtr& cloud_front, const sensor_msgs::PointCloud2::ConstPtr& cloud_back)
 {
 
     std::cout << "fused both" << '\n';
@@ -224,6 +230,23 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
         ros::Duration(3.0))) {
         return;
     }
+
+    if (!tflistener_.waitForTransform(cloud_front->header.frame_id, base_link_,
+        cloud_front->header.stamp + ros::Duration().fromSec(0.1),
+        ros::Duration(3.0))) {
+        return;
+    }
+
+    if (!tflistener_.waitForTransform(cloud_back->header.frame_id, base_link_,
+        cloud_back->header.stamp + ros::Duration().fromSec(0.1),
+        ros::Duration(3.0))) {
+        return;
+    }
+    //tranform to base_link frame
+    sensor_msgs::PointCloud2 tf_cloud_front, tf_cloud_back;
+    pcl_ros::transformPointCloud (base_link_, *cloud_front, tf_cloud_front, tflistener_);
+    pcl_ros::transformPointCloud (base_link_, *cloud_back, tf_cloud_back, tflistener_);
+
     //convert scan_front to pointcloud
     sensor_msgs::PointCloud scan_cloud_front;
     try
@@ -236,8 +259,7 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
     }
 
     //convert scan_Back to pointcloud
-    sensor_msgs::PointCloud scan_cloud_back;
-
+    sensor_msgs::PointCloud scan_cloud_back, cloud_temp;
     try
     {
       if(!single_lidar_)
@@ -251,11 +273,13 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
       if(!single_lidar_)
           cloud_fuse.points.insert(cloud_fuse.points.end(), scan_cloud_back.points.begin(), scan_cloud_back.points.end());
 
-      cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_front->points.begin(), cloud_front->points.end());
+      convertPointCloud2ToPointCloud(tf_cloud_front, cloud_temp);
+      cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_temp.points.begin(), cloud_temp.points.end());
 
-      if(!single_pointcloud_)
-        cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_back->points.begin(), cloud_back->points.end());
-
+      if(!single_pointcloud_){
+        convertPointCloud2ToPointCloud(tf_cloud_front, cloud_temp);
+        cloud_fuse.points.insert(cloud_fuse.points.end(), cloud_temp.points.begin(), cloud_temp.points.end());
+      }
       mergePointClouds(cloud_fuse, scan_front->angle_increment);
       sendVisualization(scan_front);
     }
@@ -267,6 +291,9 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
 
 void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_fuse, double angle_increment) {
 
+    cloud_crop_.header.frame_id = cloud_fuse.header.frame_id;
+    cloud_crop_.header.seq      = cloud_fuse.header.seq;
+    cloud_crop_.header.stamp    = cloud_fuse.header.stamp;
 
     for (int i = 0 ; i < 2160; i++){
         scan_fuse.ranges[i]= 40.0;
@@ -279,6 +306,7 @@ void FusedScan::mergePointClouds(sensor_msgs::PointCloud& cloud_fuse, double ang
           continue;
         }
 
+        cloud_crop_.points.push_back(cloud_fuse.points[i]);
         float angle = atan2f32(cloud_fuse.points[i].y, cloud_fuse.points[i].x);
         float range_val = hypotf32(cloud_fuse.points[i].x, cloud_fuse.points[i].y);
         int index = (int)((angle + M_PIf32)/angle_increment);
@@ -300,6 +328,11 @@ void FusedScan::sendVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_f
     scan_fuse.range_min       = scan_front->range_min;
     scan_fuse.scan_time       = scan_front->scan_time;
     scan_fuse.time_increment  = scan_front->time_increment;
+
+    //publish PointCloud2
+    sensor_msgs::PointCloud2 fused_cloud;
+    convertPointCloudToPointCloud2(cloud_crop_, fused_cloud);
+    fused_pointcloud_pub_.publish(fused_cloud);
 
     // update polygon timestamp
     polygon_viz_.header.frame_id = base_link_;

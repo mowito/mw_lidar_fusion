@@ -1,6 +1,10 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/PointCloud.h>
+#include <sensor_msgs/PointCloud2.h>
+ #include <sensor_msgs/point_field_conversion.h>
+ #include <sensor_msgs/point_cloud_conversion.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -12,6 +16,11 @@
 #include <geometry_msgs/PolygonStamped.h>
 #include <geometry_msgs/Point32.h>
 #include <geometry_msgs/PoseStamped.h>
+// #include <pcl_conversions/pcl_conversions.h>
+// #include <pcl/point_cloud.h>
+// #include <pcl/point_types.h>
+#include <pcl_ros/point_cloud.h>
+#include <pcl_ros/transforms.h>
 #include <tf2/utils.h>
 #include <vector>
 #include <algorithm>
@@ -28,11 +37,11 @@ class FusedScan {
   void fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front,
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back);
 
-  void fusedCloudCallback(const sensor_msgs::PointCloud::ConstPtr& cloud_front,
-                                        const sensor_msgs::PointCloud::ConstPtr& cloud_back);
+  void fusedCloudCallback(const sensor_msgs::PointCloud2::ConstPtr& cloud_front,
+                                        const sensor_msgs::PointCloud2::ConstPtr& cloud_back);
 
   void fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, const sensor_msgs::LaserScan::ConstPtr& scan_back,
-                                      const sensor_msgs::PointCloud::ConstPtr& cloud_front, const sensor_msgs::PointCloud::ConstPtr& cloud_back);
+                                      const sensor_msgs::PointCloud2::ConstPtr& cloud_front, const sensor_msgs::PointCloud2::ConstPtr& cloud_back);
 
   void mergePointClouds(sensor_msgs::PointCloud& cloud_fuse, double angle_increment);
 
@@ -45,24 +54,26 @@ class FusedScan {
 
     message_filters::Subscriber <sensor_msgs::LaserScan> scan_front_;
     message_filters::Subscriber <sensor_msgs::LaserScan> scan_back_;
-    message_filters::Subscriber <sensor_msgs::PointCloud> cloud_front_;
-    message_filters::Subscriber <sensor_msgs::PointCloud> cloud_back_;
+    message_filters::Subscriber <sensor_msgs::PointCloud2> cloud_front_;
+    message_filters::Subscriber <sensor_msgs::PointCloud2> cloud_back_;
+
 
 
     typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan,
-                                                                  sensor_msgs::PointCloud, sensor_msgs::PointCloud> ScanPointCloudPolicy;
+                                                                  sensor_msgs::PointCloud2, sensor_msgs::PointCloud2> ScanPointCloudPolicy;
     typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> ScanPolicy;
-    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::PointCloud, sensor_msgs::PointCloud> PointCloudPolicy;
+    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::PointCloud2, sensor_msgs::PointCloud2> PointCloudPolicy;
 
     message_filters::Synchronizer<ScanPointCloudPolicy> scan_pointcloud_sync_;
     message_filters::Synchronizer<ScanPolicy> scan_sync_;
     message_filters::Synchronizer<PointCloudPolicy> pointcloud_sync_;
 
     ros::Publisher fused_scan_pub_;
+    ros::Publisher fused_pointcloud_pub_;
     ros::Publisher polygon_pub_;
     ros::Subscriber odom_sub_;
 
-    sensor_msgs::PointCloud cloud_fuse;
+    sensor_msgs::PointCloud cloud_fuse, cloud_crop_;
     sensor_msgs::LaserScan scan_fuse;
 
     std::string scan_front_topic_name_;
