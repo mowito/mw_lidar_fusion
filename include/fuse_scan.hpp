@@ -28,9 +28,14 @@ class FusedScan {
   void fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front,
                                  const sensor_msgs::LaserScan::ConstPtr& scan_back);
 
-  void mergePointClouds(sensor_msgs::PointCloud& cloud_front,
-                        sensor_msgs::PointCloud& cloud_back,
-                        const sensor_msgs::LaserScan::ConstPtr& scan_front);
+  void fusedCloudCallback(const sensor_msgs::PointCloud::ConstPtr& cloud_front,
+                                        const sensor_msgs::PointCloud::ConstPtr& cloud_back);
+
+  void fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& scan_front, const sensor_msgs::LaserScan::ConstPtr& scan_back,
+                                      const sensor_msgs::PointCloud::ConstPtr& cloud_front, const sensor_msgs::PointCloud::ConstPtr& cloud_back);
+
+  void mergePointClouds(sensor_msgs::PointCloud& cloud_fuse, double angle_increment);
+
   void sendVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
 
   private:
@@ -40,23 +45,35 @@ class FusedScan {
 
     message_filters::Subscriber <sensor_msgs::LaserScan> scan_front_;
     message_filters::Subscriber <sensor_msgs::LaserScan> scan_back_;
+    message_filters::Subscriber <sensor_msgs::PointCloud> cloud_front_;
+    message_filters::Subscriber <sensor_msgs::PointCloud> cloud_back_;
 
 
-    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> MySyncPolicy;
-    message_filters::Synchronizer<MySyncPolicy> sync_;
+    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan,
+                                                                  sensor_msgs::PointCloud, sensor_msgs::PointCloud> ScanPointCloudPolicy;
+    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::LaserScan, sensor_msgs::LaserScan> ScanPolicy;
+    typedef message_filters::sync_policies::ApproximateTime <sensor_msgs::PointCloud, sensor_msgs::PointCloud> PointCloudPolicy;
+
+    message_filters::Synchronizer<ScanPointCloudPolicy> scan_pointcloud_sync_;
+    message_filters::Synchronizer<ScanPolicy> scan_sync_;
+    message_filters::Synchronizer<PointCloudPolicy> pointcloud_sync_;
+
     ros::Publisher fused_scan_pub_;
     ros::Publisher polygon_pub_;
     ros::Subscriber odom_sub_;
 
-    sensor_msgs::PointCloud cloud_back;
     sensor_msgs::PointCloud cloud_fuse;
     sensor_msgs::LaserScan scan_fuse;
 
     std::string scan_front_topic_name_;
     std::string scan_back_topic_name_;
+    std::string cloud_front_topic_name_;
+    std::string cloud_back_topic_name_;
+
     std::string fused_scan_topic_name_;
     std::string polygon_topic_name_;
     bool single_lidar_;
+    bool single_pointcloud_;
 
     std::string base_link_;
 
