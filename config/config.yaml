@@ -1,13 +1,7 @@
-num_lidars: 1 #max 2
-# num_depth_sensors: 2 #max 2
-
-scan_front_topic_name: "/scan"
-scan_back_topic_name: "/scan"
-# cloud_front_topic_name: "/bbb"
-# cloud_back_topic_name: "/aaa"
+scan_topics: ["/scan"]
+# pointcloud2_topics: ["/pointcloud"]
 fused_scan_topic_name: "/fused_scan_temp"
-fused_pointcloud_topic_name: "/cloud"
+fused_pointcloud_topic_name: "/fused_pointcloud_temp"
 base_link: "base_link"
 polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
-# polygon: [[2.0, -2.0],[4.0,0.0],[2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]] #in float
 polygon_topic_name: "/lidar_crop_polygon"
