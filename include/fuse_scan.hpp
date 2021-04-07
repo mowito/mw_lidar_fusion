@@ -1,10 +1,13 @@
+#ifndef FUSE_SCAN_H
+#define FUSE_SCAN_H
+
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud.h>
 #include <sensor_msgs/PointCloud2.h>
- #include <sensor_msgs/point_field_conversion.h>
- #include <sensor_msgs/point_cloud_conversion.h>
+#include <sensor_msgs/point_field_conversion.h>
+#include <sensor_msgs/point_cloud_conversion.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -131,5 +134,6 @@ class FusedScan {
     int num_lidars_; //number of scan topics
     int num_depth_sensors_;//number of PointCloud2 topics
 
-
 };
+
+#endif
