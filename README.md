@@ -1,6 +1,6 @@
 # mw_lidar_fusion
 
-mw_lidar_fusion is a tool for fusing LiDAR data from two sources.
+mw_lidar_fusion is a tool for fusing LiDAR and PointCloud2 data from upto 4 sources each.
 
 ## Build instructions
 ```
