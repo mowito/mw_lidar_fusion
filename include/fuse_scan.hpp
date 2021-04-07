@@ -116,7 +116,7 @@ class FusedScan {
     sensor_msgs::PointCloud cloud_fuse_, cloud_crop_;
     sensor_msgs::LaserScan scan_fuse_;
 
-    std::vector<std::string> scan_topics_, cloud_topics_;
+    std::vector<std::string> scan_topics_, cloud_topics_; //vector of scan and pointcloud2 topic names to subscribe to
     std::string fused_scan_topic_name_;
     std::string fused_pointcloud_topic_name_;
     std::string polygon_topic_name_;
