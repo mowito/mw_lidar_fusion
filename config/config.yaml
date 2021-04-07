@@ -1,6 +1,6 @@
-scan_topics: ["/scan"] #list of LaserScan topics
+scan_topics: ["/scan"] #list of LaserScan topics, max 4
 
-# pointcloud2_topics: ["/pointcloud"] #list of PointCloud2 topics
+# pointcloud2_topics: ["/pointcloud"] #list of PointCloud2 topics, max 4
 
 fused_scan_topic_name: "/fused_scan_temp" #topic name of fused LaserScan
 
