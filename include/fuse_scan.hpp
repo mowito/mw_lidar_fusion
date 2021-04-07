@@ -46,9 +46,13 @@ class FusedScan {
   void mergePointClouds(sensor_msgs::PointCloud& cloud_fuse, double angle_increment);
 
   void sendVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
+  void sendLaserVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
+  void sendCloudVisualization();
+  void sendPolygonVisualization();
 
   private:
   ros::NodeHandle nh_;
+  ros::NodeHandle private_nh_;
     tf::TransformListener tflistener_;
     laser_geometry::LaserProjection projector_;
 
@@ -82,6 +86,7 @@ class FusedScan {
     std::string cloud_back_topic_name_;
 
     std::string fused_scan_topic_name_;
+    std::string fused_pointcloud_topic_name_;
     std::string polygon_topic_name_;
     bool single_lidar_;
     bool single_pointcloud_;
@@ -92,6 +97,9 @@ class FusedScan {
     typedef K::Point_2 Point;
     std::vector<Point> polygon_;
     geometry_msgs::PolygonStamped polygon_viz_;
+
+    int num_lidars_;
+    int num_depth_sensors_;
 
 
 };
