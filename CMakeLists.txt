@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   tf
+  pcl_ros
   laser_geometry
   message_filters
   message_generation
@@ -22,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## CGAL
 find_package(CGAL REQUIRED COMPONENTS Core)
+find_package(PCL REQUIRED)
 
 
 ## System dependencies are found with CMake's conventions

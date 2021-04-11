@@ -1,0 +1,7 @@
+scan_topics: ["/scan"]
+pointcloud2_topics: ["/fused_pointcloud_temp"]
+fused_scan_topic_name: "/fused_scan_temp1"
+fused_pointcloud_topic_name: "/fused_pointcloud_temp1"
+base_link: "base_link"
+polygon: [[2.0, -2.0],[4.0,0.0],[2.0, 2.0], [-2.0, 2.0], [-2.0, -2.0]] #in float
+polygon_topic_name: "/lidar_crop_polygon1"
