@@ -224,6 +224,8 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
   cloud_fuse_.points.clear();
   sensor_msgs::PointCloud2 cloud2_msg_transformed;
   sensor_msgs::PointCloud cloud_msg;
+  sensor_msgs::PointCloud2Ptr cloud2_msg;
+
   for(int i=0; i<num_lidars_;i++){
     try
     {
@@ -239,9 +241,11 @@ void FusedScan::fusedScanCloudCallback(const sensor_msgs::LaserScan::ConstPtr& s
   for(int i=0; i<num_depth_sensors_;i++){
     try
     {
-      pcl_ros::transformPointCloud (base_link_, cloud2_msg_[i], cloud2_msg_transformed, tflistener_);
-      convertPointCloud2ToPointCloud(cloud2_msg_transformed, cloud_msg);
-      cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_msg.points.begin(), cloud_msg.points.end());
+      // pcl_ros::transformPointCloud (base_link_, cloud2_msg_[i], cloud2_msg_transformed, tflistener_);
+      cloud2_msg.reset(new sensor_msgs::PointCloud2(cloud2_msg_[i]));
+      processPointCloud(cloud2_msg);
+      // convertPointCloud2ToPointCloud(cloud_processed_, cloud_msg);
+      cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_processed_.points.begin(), cloud_processed_.points.end());
     }
     catch ( const tf2::TransformException& e )
     {
@@ -334,6 +338,109 @@ void FusedScan::sendVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_f
   sendPolygonVisualization();
 
 }
+
+void FusedScan::processPointCloud(sensor_msgs::PointCloud2::Ptr& cloud_msg){
+
+    sensor_msgs::LaserScan output;
+    output.header = cloud_msg->header;
+    output.header.frame_id = base_link_;
+
+    output.angle_min = -1.5708;
+    output.angle_max = 1.5708;
+    output.angle_increment = 0.087;
+    output.time_increment = 0.0;
+    output.scan_time = 0.3333;
+    output.range_min = 0.45;
+    output.range_max = 4.0;
+    bool use_inf_ = true;
+    double min_height_ = 0.0;
+    double max_height_ = 1.0;
+    double range_min_= 0.45;
+
+    //determine amount of rays to create
+    uint32_t ranges_size = std::ceil((output.angle_max - output.angle_min) / output.angle_increment);
+
+    //determine if laserscan rays with no obstacle data will evaluate to infinity or max_range
+    if (use_inf_)
+    {
+      output.ranges.assign(ranges_size, std::numeric_limits<double>::infinity());
+    }
+    else
+    {
+      output.ranges.assign(ranges_size, output.range_max + 1.0);
+    }
+
+    sensor_msgs::PointCloud2ConstPtr cloud_out;
+    sensor_msgs::PointCloud2Ptr cloud;
+    sensor_msgs::PointCloud2 cloud2_msg, cloud2;
+    cloud2_msg = *cloud_msg;
+
+    // Transform cloud if necessary
+    if (!(output.header.frame_id == cloud_msg->header.frame_id))
+    {
+      try
+      {
+        cloud.reset(new sensor_msgs::PointCloud2);
+        pcl_ros::transformPointCloud (base_link_, cloud2_msg, cloud2, tflistener_);
+        cloud_out.reset(new sensor_msgs::PointCloud2(cloud2));
+      }
+      catch (tf2::TransformException ex)
+      {
+        ROS_ERROR_STREAM("Transform failure: " << ex.what());
+        return;
+      }
+    }
+    else
+    {
+      cloud_out = cloud_msg;
+    }
+
+    // Iterate through pointcloud
+    for (sensor_msgs::PointCloud2ConstIterator<float>
+              iter_x(*cloud_out, "x"), iter_y(*cloud_out, "y"), iter_z(*cloud_out, "z");
+              iter_x != iter_x.end();
+              ++iter_x, ++iter_y, ++iter_z)
+    {
+
+      if (std::isnan(*iter_x) || std::isnan(*iter_y) || std::isnan(*iter_z))
+      {
+        ROS_DEBUG("rejected for nan in point(%f, %f, %f)\n", *iter_x, *iter_y, *iter_z);
+        continue;
+      }
+
+      if (*iter_z > max_height_ || *iter_z < min_height_)
+      {
+        ROS_DEBUG("rejected for height %f not in range (%f, %f)\n", *iter_z, min_height_, max_height_);
+        continue;
+      }
+
+      double range = hypot(*iter_x, *iter_y);
+      if (range < range_min_)
+      {
+        ROS_DEBUG("rejected for range %f below minimum value %f. Point: (%f, %f, %f)", range, range_min_, *iter_x, *iter_y,
+                      *iter_z);
+        continue;
+      }
+
+      double angle = atan2(*iter_y, *iter_x);
+      if (angle < output.angle_min || angle > output.angle_max)
+      {
+        ROS_DEBUG("rejected for angle %f not in range (%f, %f)\n", angle, output.angle_min, output.angle_max);
+        continue;
+      }
+
+      //overwrite range at laserscan ray if new range is smaller
+      int index = (angle - output.angle_min) / output.angle_increment;
+      if (range < output.ranges[index])
+      {
+        output.ranges[index] = range;
+      }
+
+    }
+
+    projector_.transformLaserScanToPointCloud(base_link_, output, cloud_processed_, tflistener_);
+  }
+
 
 int main(int argc, char **argv){
     ros::init(argc, argv, "lidar_fusion_node");

@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 #define EPSI 10e-6
 
@@ -80,6 +81,8 @@ class FusedScan {
   void sendCloudVisualization(); //publishes fused pointcloud
   void sendPolygonVisualization(); //publishes polygon
 
+  void processPointCloud(sensor_msgs::PointCloud2::Ptr& cloud_in);
+
   private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
@@ -116,7 +119,7 @@ class FusedScan {
     ros::Publisher fused_pointcloud_pub_; //publisher for fused PointCloud2
     ros::Publisher polygon_pub_; //publisher for polygon
 
-    sensor_msgs::PointCloud cloud_fuse_, cloud_crop_;
+    sensor_msgs::PointCloud cloud_fuse_, cloud_crop_, cloud_processed_;
     sensor_msgs::LaserScan scan_fuse_;
 
     std::vector<std::string> scan_topics_, cloud_topics_; //vector of scan and pointcloud2 topic names to subscribe to
