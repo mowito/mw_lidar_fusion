@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <sensor_msgs/point_cloud2_iterator.h>
 
 #define EPSI 10e-6
 
@@ -76,9 +77,12 @@ class FusedScan {
    * @param laserscan to publish
    */
   void sendLaserVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
+  void sendLaserVisualization();
 
   void sendCloudVisualization(); //publishes fused pointcloud
   void sendPolygonVisualization(); //publishes polygon
+
+  void processPointCloud(sensor_msgs::PointCloud2& cloud_in, sensor_msgs::PointCloud& cloud_processed);
 
   private:
     ros::NodeHandle nh_;
@@ -133,6 +137,15 @@ class FusedScan {
 
     int num_lidars_; //number of scan topics
     int num_depth_sensors_;//number of PointCloud2 topics
+
+    double min_height_;
+    double max_height_;
+    double angle_min_;
+    double angle_max_;
+    double angle_increment_;
+    double scan_time_;
+    double range_min_;
+    double range_max_;
 
 };
 

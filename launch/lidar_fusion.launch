@@ -3,8 +3,4 @@
     <node name="lidar_fusion_node" pkg="lidar_fusion" type="lidar_fusion" output="screen">
       <rosparam command="load" file="$(find lidar_fusion)/config/config.yaml" />
     </node>
-     <!--Uncomment to test laser + cloud fusion with lidar_fusion_node cloud output-->
-    <!-- <node name="lidar_fusion_node2" pkg="lidar_fusion" type="lidar_fusion" output="screen">
-      <rosparam command="load" file="$(find lidar_fusion)/config/config_alt.yaml" />
-    </node> -->
 </launch>
