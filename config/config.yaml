@@ -14,6 +14,7 @@ polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 
 lidar_fusion:
   angle_increment: 0.00873 #set manually, larger or smaller value
+  range_max: 40.0
 
 ## OPTIONAL PARAMETERS FOR CONVERTING POINTCLOUD TO LASERSCAN ##
 # pointcloud2scan:

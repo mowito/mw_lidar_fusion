@@ -47,7 +47,7 @@ pointcloud_sync_(PointCloudPolicy(20), cloud_sub_[0], cloud_sub_[1], cloud_sub_[
     private_nh_.param("lidar_fusion/angle_increment", angle_increment_, -1.0);
     private_nh_.param("pointcloud2scan/scan_time", scan_time_, 0.3333);
     private_nh_.param("pointcloud2scan/range_min", range_min_, 0.45);
-    private_nh_.param("pointcloud2scan/range_max", range_max_, 4.0);
+    private_nh_.param("lidar_fusion/range_max", range_max_, 4.0);
 
 
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
@@ -314,7 +314,7 @@ void FusedScan::sendLaserVisualization(const sensor_msgs::LaserScan::ConstPtr& s
     scan_fuse_.angle_increment = angle_increment_;
     scan_fuse_.angle_max       = M_PIf32;
     scan_fuse_.angle_min       = -1* M_PIf32;
-    scan_fuse_.range_max       = scan_front->range_max;
+    scan_fuse_.range_max       = range_max;
     scan_fuse_.range_min       = scan_front->range_min;
     scan_fuse_.scan_time       = scan_front->scan_time;
     scan_fuse_.time_increment  = scan_front->time_increment;
