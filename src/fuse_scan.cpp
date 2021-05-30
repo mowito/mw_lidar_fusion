@@ -44,7 +44,7 @@ pointcloud_sync_(PointCloudPolicy(20), cloud_sub_[0], cloud_sub_[1], cloud_sub_[
     private_nh_.param("pointcloud2scan/max_height", max_height_, 1.0);
     private_nh_.param("pointcloud2scan/angle_min", angle_min_, -1.5708);
     private_nh_.param("pointcloud2scan/angle_max", angle_max_, 1.5708);
-    private_nh_.param("pointcloud2scan/angle_increment", angle_increment_, 0.087);
+    private_nh_.param("lidar_fusion/angle_increment", angle_increment_, -1.0);
     private_nh_.param("pointcloud2scan/scan_time", scan_time_, 0.3333);
     private_nh_.param("pointcloud2scan/range_min", range_min_, 0.45);
     private_nh_.param("pointcloud2scan/range_max", range_max_, 4.0);
@@ -108,10 +108,13 @@ pointcloud_sync_(PointCloudPolicy(20), cloud_sub_[0], cloud_sub_[1], cloud_sub_[
     polygon_pub_ = nh_.advertise<geometry_msgs::PolygonStamped> (polygon_topic_name_, 5);
     fused_pointcloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2> (fused_pointcloud_topic_name_, 20);
 
-    for (int i = 0 ; i < 2160; i++){
-        scan_fuse_.ranges.push_back(40.0);
+    vector_size_ = int(2 * M_PIf32/angle_increment_);
+    std::cout << vector_size_ << '\n';
+
+    for (int i = 0 ; i < vector_size_; i++){
+        scan_fuse_.ranges.push_back(range_max_);
     }
-    for (int i = 0 ; i < 2160; i++){
+    for (int i = 0 ; i < vector_size_; i++){
         scan_fuse_.intensities.push_back(100.0);
     }
 }
@@ -125,6 +128,7 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
     // scan_msg_.insert(scan_msg_.end(),{*scan_1, *scan_2, *scan_3, *scan_4});
     scan_msg_ = {*scan_1, *scan_2, *scan_3, *scan_4};
 
+    // std::cout << scan_msg_[0].intensities.size() << '\n';
 
     for(int i =0; i< num_lidars_; i++){
       if (!tflistener_.waitForTransform(scan_msg_[i].header.frame_id, base_link_,
@@ -155,7 +159,9 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
       cloud_fuse_.header.stamp    = cloud_msg.header.stamp;
 
       //merge the point clouds
-      mergePointClouds(scan_1->angle_increment);
+      if(angle_increment_ < 0)
+        angle_increment_ = scan_1->angle_increment;
+      mergePointClouds(angle_increment_);
       sendVisualization(scan_1);
 
 }
@@ -275,8 +281,8 @@ void FusedScan::mergePointClouds(double angle_increment) {
     cloud_crop_.header.stamp    = cloud_fuse_.header.stamp;
     cloud_crop_.points.clear();
 
-    for (int i = 0 ; i < 2160; i++){
-        scan_fuse_.ranges[i]= 40.0;
+    for (int i = 0 ; i < vector_size_; i++){
+        scan_fuse_.ranges[i]= range_max_;
     }
     for (long int i = 0; i < cloud_fuse_.points.size(); i++){
 
@@ -305,7 +311,7 @@ void FusedScan::sendLaserVisualization(const sensor_msgs::LaserScan::ConstPtr& s
     scan_fuse_.header.frame_id = cloud_fuse_.header.frame_id;
     scan_fuse_.header.stamp    = cloud_fuse_.header.stamp;
     scan_fuse_.header.seq      = cloud_fuse_.header.seq;
-    scan_fuse_.angle_increment = scan_front->angle_increment;
+    scan_fuse_.angle_increment = angle_increment_;
     scan_fuse_.angle_max       = M_PIf32;
     scan_fuse_.angle_min       = -1* M_PIf32;
     scan_fuse_.range_max       = scan_front->range_max;
@@ -371,11 +377,11 @@ void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_ms
     output.scan_time = scan_time_;
     output.range_min = range_min_;
     output.range_max = range_max_;
-    
+
     //determine amount of rays to create
     uint32_t ranges_size = std::ceil((output.angle_max - output.angle_min) / output.angle_increment);
 
- 
+
     output.ranges.assign(ranges_size, std::numeric_limits<double>::infinity());
 
     sensor_msgs::PointCloud2ConstPtr cloud_out;

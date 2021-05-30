@@ -138,6 +138,8 @@ class FusedScan {
     int num_lidars_; //number of scan topics
     int num_depth_sensors_;//number of PointCloud2 topics
 
+    int vector_size_;
+
     double min_height_;
     double max_height_;
     double angle_min_;
@@ -146,6 +148,7 @@ class FusedScan {
     double scan_time_;
     double range_min_;
     double range_max_;
+    double angle_displacement_;
 
 };
 
