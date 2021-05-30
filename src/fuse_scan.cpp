@@ -108,7 +108,7 @@ pointcloud_sync_(PointCloudPolicy(20), cloud_sub_[0], cloud_sub_[1], cloud_sub_[
     polygon_pub_ = nh_.advertise<geometry_msgs::PolygonStamped> (polygon_topic_name_, 5);
     fused_pointcloud_pub_ = nh_.advertise<sensor_msgs::PointCloud2> (fused_pointcloud_topic_name_, 20);
 
-    vector_size_ = int(2 * M_PIf32/angle_increment_);
+    vector_size_ = int(2 * M_PIf32/angle_increment_) + 1;
     std::cout << vector_size_ << '\n';
 
     for (int i = 0 ; i < vector_size_; i++){
