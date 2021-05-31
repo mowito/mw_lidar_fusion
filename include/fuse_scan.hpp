@@ -36,6 +36,11 @@ class FusedScan {
 
   private:
   /**
+   * @brief initializes parameters of the fused scan that depends upon data from the scans
+   * @param The LaserScan message from the first topic
+   */
+  void initializeParams(const sensor_msgs::LaserScan::ConstPtr&);
+  /**
    * @brief callback function for fusing upto 4 laserscan topics
    * @param The LaserScan messages from the topics
    */
@@ -70,13 +75,12 @@ class FusedScan {
    * @brief publishes LaserScan, PointCloud2 and polygon
    * @param laserscan to publish
    */
-  void sendVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
+  void sendVisualization();
 
   /**
    * @brief publishes LaserScan
-   * @param laserscan to publish
+   * @param nil
    */
-  void sendLaserVisualization(const sensor_msgs::LaserScan::ConstPtr& scan_front);
   void sendLaserVisualization();
 
   void sendCloudVisualization(); //publishes fused pointcloud
@@ -121,7 +125,7 @@ class FusedScan {
     ros::Publisher polygon_pub_; //publisher for polygon
 
     sensor_msgs::PointCloud cloud_fuse_, cloud_crop_;
-    sensor_msgs::LaserScan scan_fuse_;
+    sensor_msgs::LaserScan scan_fuse_, scan_default_;
 
     std::vector<std::string> scan_topics_, cloud_topics_; //vector of scan and pointcloud2 topic names to subscribe to
     std::string fused_scan_topic_name_;
@@ -137,18 +141,17 @@ class FusedScan {
 
     int num_lidars_; //number of scan topics
     int num_depth_sensors_;//number of PointCloud2 topics
+    uint32_t range_size_;
 
-    int vector_size_;
+    bool init_params_; //if parameters are initialized
 
-    double min_height_;
-    double max_height_;
-    double angle_min_;
-    double angle_max_;
+
     double angle_increment_;
     double scan_time_;
     double range_min_;
     double range_max_;
-    double angle_displacement_;
+    double max_height_ = 1.0;
+    double min_height_ = 0.0;
 
 };
 
