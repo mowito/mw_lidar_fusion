@@ -12,13 +12,10 @@ polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
 
 polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 
-## OPTIONAL PARAMETERS FOR CONVERTING POINTCLOUD TO LASERSCAN ##
-# pointcloud2scan:
-#   min_height: 0.0
-#   max_height: 1.0
-#   angle_min: -1.5708 # -M_PI/2
-#   angle_max: 1.5708 # M_PI/2
-#   angle_increment: 0.0087 # M_PI/360.0
-#   scan_time: 0.3333
-#   range_min: 0.45
-#   range_max: 4.0
+
+## OPTIONAL PARAMETERS - if below parameters are not specified, the output fused_scan parameters will be set to the first input scan topic
+# fused_scan_options:
+  # angle_increment: 0.00873 # M_PI/360.0
+  # range_max: 40.0
+  # range_min: 0.45
+  # scan_time: 0.3333
