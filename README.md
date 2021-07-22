@@ -15,3 +15,39 @@ source ./devel/setup.bash
 
 You can then launch different configurations by:
 `roslaunch lidar_fusion lidar_fusion.launch`
+
+A static transform between the `lidar` frame of reference and the `base_link` frame of reference is to be published for all lidars.
+
+```
+ <!-- static transform between laser and the robot -->
+    <node pkg="tf" type="static_transform_publisher" name="base_2_lidar" args="0 0 0 0 0 0 base_link laser 670"/>
+```    
+Edit the parameters in the line above and add it to your launch file if a static tf is not being published through other means.
+
+## Parameters in config.yaml
+
+- scan_topics: list of all LaserScan topics, max 4
+
+- pointcloud2_topics: list of PointCloud2 topics, max 4
+
+- fused_scan_topic_name: topic name at which fused LaserScan will be published
+
+- fused_pointcloud_topic_name: topic name at which fused PointCloud2 will be published
+
+- base_link: Name of base_link of the robot
+
+- polygon: coordinates of edges of the polygon to be cropped from the Laserscan/Pointcloud data
+
+- angle_min: minimum angle for which data from all input lidar's is included in the fused scan range[-pi,0]
+
+- angle_max: maximum angle for which data from all input lidar's is included in the fused scan range[0,pi]
+
+- polygon_topic_name: topic name at which coordinates of edges of the polygon will be published
+
+## Example
+
+Fusion with single LiDAR and angle_min=-pi/2 angle_max=pi/2
+
+The points in white represent the filtered and fused data whereas the points in red represent the unfiltered raw laserscan
+
+![](/examples/1.png) ![](/examples/2.png) ![](/examples/3.png)
