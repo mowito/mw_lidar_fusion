@@ -45,7 +45,8 @@ init_params_(false)
     private_nh_.param("fused_scan_options/range_max", range_max_, -1.0);
     private_nh_.param("fused_scan_options/range_min", range_min_, -1.0);
     private_nh_.param("fused_scan_options/scan_time", scan_time_, -1.0);
-
+    private_nh_.param("angle_min", angle_min_,-M_PI);
+    private_nh_.param("angle_max", angle_max_,M_PI);
 
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
         for (int i = 0; i < polygon.size(); i++) {
@@ -165,7 +166,10 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
       try
       {
         projector_.transformLaserScanToPointCloud(base_link_, scan_msg_[i], cloud_msg, tflistener_);
-        cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_msg.points.begin(), cloud_msg.points.end());
+        //apply angle_filtering 
+        convertPointCloudToPointCloud2(cloud_msg, cloud_conv_);
+        processPointCloud(cloud_conv_, cloud_filtered_);
+        cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_filtered_.points.begin(), cloud_filtered_.points.end());
       }
       catch ( const tf2::TransformException& e )
       {
@@ -340,8 +344,8 @@ void FusedScan::sendLaserVisualization() {
     scan_fuse_.header.stamp    = cloud_fuse_.header.stamp;
     scan_fuse_.header.seq      = cloud_fuse_.header.seq;
     scan_fuse_.angle_increment = angle_increment_;
-    scan_fuse_.angle_max       = M_PI;
-    scan_fuse_.angle_min       = -1* M_PI;
+    scan_fuse_.angle_max       = angle_max_;
+    scan_fuse_.angle_min       = angle_min_;
     scan_fuse_.range_max       = range_max_;
     scan_fuse_.range_min       = range_min_;
     scan_fuse_.scan_time       = scan_time_;
@@ -382,8 +386,8 @@ void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_ms
     output.header = cloud_msg.header;
     output.header.frame_id = base_link_;
 
-    output.angle_min = -1 * M_PI;
-    output.angle_max = M_PI;
+    output.angle_min = angle_min_;
+    output.angle_max = angle_max_;
     output.angle_increment = angle_increment_;
 
     output.scan_time = scan_time_;

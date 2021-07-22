@@ -8,7 +8,10 @@ fused_pointcloud_topic_name: "/fused_pointcloud_temp" #topic name of fused Point
 
 base_link: "base_link"
 
-polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
+polygon: [[0.0, 0.0],[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]] #in float
+
+angle_min: -1.570796326794896 
+angle_max: 1.570796326794896
 
 polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 

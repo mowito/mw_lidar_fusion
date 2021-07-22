@@ -1,6 +1,13 @@
 <launch>
+
+    <!-- static transform between laser and the robot -->
+    <node pkg="tf" type="static_transform_publisher" name="base_2_lasera" args="0 0 0 0 0 0 base_link laser 670"/>
+    
+    <param name="use_sim_time" value="true"/>
+
     <!--Load parameters from config files-->
     <node name="lidar_fusion_node" pkg="lidar_fusion" type="lidar_fusion" output="screen">
       <rosparam command="load" file="$(find lidar_fusion)/config/config.yaml" />
     </node>
+
 </launch>

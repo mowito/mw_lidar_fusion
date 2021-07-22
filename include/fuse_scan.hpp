@@ -124,8 +124,9 @@ class FusedScan {
     ros::Publisher fused_pointcloud_pub_; //publisher for fused PointCloud2
     ros::Publisher polygon_pub_; //publisher for polygon
 
-    sensor_msgs::PointCloud cloud_fuse_, cloud_crop_;
+    sensor_msgs::PointCloud cloud_fuse_, cloud_crop_,cloud_filtered_;
     sensor_msgs::LaserScan scan_fuse_, scan_default_;
+    sensor_msgs::PointCloud2 cloud_conv_;
 
     std::vector<std::string> scan_topics_, cloud_topics_; //vector of scan and pointcloud2 topic names to subscribe to
     std::string fused_scan_topic_name_;
@@ -152,7 +153,8 @@ class FusedScan {
     double range_max_;
     double max_height_ = 1.0;
     double min_height_ = 0.0;
-
+    double angle_min_;
+    double angle_max_;
 };
 
 #endif
