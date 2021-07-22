@@ -10,8 +10,8 @@ base_link: "base_link"
 
 polygon: [[0.0, 0.0],[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]] #in float
 
-angle_min: -1.570796326794896 
-angle_max: 1.570796326794896
+angle_min: 1.570796
+angle_max: 3.14159
 
 polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 
