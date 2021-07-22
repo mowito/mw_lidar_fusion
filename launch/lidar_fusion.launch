@@ -1,9 +1,7 @@
 <launch>
 
     <!-- static transform between laser and the robot -->
-    <node pkg="tf" type="static_transform_publisher" name="base_2_lidar1" args="-0.49 0.2 0.22 0 0 -3.1415926535 base_link lidar1 670"/>
-    <!-- static transform between laser and the robot -->
-    <node pkg="tf" type="static_transform_publisher" name="base_2_lidar2" args="0.49 -0.2 0.22 0 0 0 base_link lidar2 670"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_2_lidar1" args="0 0 0 0 0 0 base_link laser 670"/>
     
     <param name="use_sim_time" value="true"/>
 
