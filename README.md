@@ -1,6 +1,6 @@
 # mw_lidar_fusion
 
-mw_lidar_fusion is a tool for fusing LiDAR and PointCloud2 data from upto 4 sources each.
+mw_lidar_fusion is a tool for fusing and filtering LiDAR and PointCloud2 data from upto 4 sources each.
 
 ## Build instructions
 ```
@@ -59,12 +59,30 @@ rosbag play --clock name_of_bag.bag
 
 ## Example
 
+### One LiDAR
+
 The points in white represent the filtered and fused data whereas the points in red represent the unfiltered raw laserscan
 
-Fusion with single LiDAR and angle_min=-pi/2 angle_max=pi/2
+- Filtering with angle_min=-pi/2 angle_max=pi/2
 
 ![](/examples/1.png)
 
-Fusion with single LiDAR and angle_min= pi/2 angle_max=pi
+- Filtering with angle_min= pi/2 angle_max=pi
 
 ![](/examples/5.png)
+
+### Two LiDAR's
+
+The points in white represent the filtered and fused data whereas the points in red and purple represent the unfiltered raw laserscan from two seperate rostopics
+
+- Raw data
+
+![](/examples/8.png)
+
+- Fusion of LiDAR Data
+
+![](/examples/6.png)
+
+- Fusion and filtering with angle_min= 0 angle_max=pi
+
+![](/examples/7.png)
