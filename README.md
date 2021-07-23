@@ -43,6 +43,20 @@ Edit the parameters in the line above and add it to your launch file if a static
 - angle_max: maximum angle for which data from all input lidar's is included in the fused scan
 - polygon_topic_name: topic name at which coordinates of edges of the polygon will be published
 
+## Testing On Simulation
+
+If you are testing the stack in simulation using rosbags you will need to sync the clocks for the bag and the sim.
+
+Add this line to the roslaunch file
+ ```
+ <param name="use_sim_time" value="true"/>
+```
+
+And play your rosbag's using the `--clock` parameter.
+```
+rosbag play --clock name_of_bag.bag 
+```
+
 ## Example
 
 The points in white represent the filtered and fused data whereas the points in red represent the unfiltered raw laserscan
@@ -53,4 +67,4 @@ Fusion with single LiDAR and angle_min=-pi/2 angle_max=pi/2
 
 Fusion with single LiDAR and angle_min= pi/2 angle_max=pi
 
-![](/examples/4.png)
+![](/examples/5.png)
