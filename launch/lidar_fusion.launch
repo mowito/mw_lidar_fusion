@@ -1,4 +1,4 @@
-<launch>
+<launch>    
     <!--Load parameters from config files-->
     <node name="lidar_fusion_node" pkg="lidar_fusion" type="lidar_fusion" output="screen">
       <rosparam command="load" file="$(find lidar_fusion)/config/config.yaml" />

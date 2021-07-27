@@ -40,13 +40,17 @@ init_params_(false)
                                 "/lidar_crop_polygon")) {
         ROS_WARN_STREAM("[LIDAR FUSION] Did not load polygon_topic_name. Standard value is: " << polygon_topic_name_);
     }
+    if (!private_nh_.getParam("angle_min", angle_min_)) {
+        ROS_WARN_STREAM("[LIDAR FUSION] Did not load angle_min");
+    }
+    if (!private_nh_.getParam("angle_max", angle_max_)) {
+        ROS_WARN_STREAM("[LIDAR FUSION] Did not load angle_max");
+    }
 
     private_nh_.param("fused_scan_options/angle_increment", angle_increment_, -1.0);
     private_nh_.param("fused_scan_options/range_max", range_max_, -1.0);
     private_nh_.param("fused_scan_options/range_min", range_min_, -1.0);
     private_nh_.param("fused_scan_options/scan_time", scan_time_, -1.0);
-    private_nh_.param("angle_min", angle_min_,-M_PI);
-    private_nh_.param("angle_max", angle_max_,M_PI);
 
     if (polygon.getType() == XmlRpc::XmlRpcValue::TypeArray) {
         for (int i = 0; i < polygon.size(); i++) {
@@ -168,7 +172,7 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
         projector_.transformLaserScanToPointCloud(base_link_, scan_msg_[i], cloud_msg, tflistener_);
         //apply angle_filtering 
         convertPointCloudToPointCloud2(cloud_msg, cloud_conv_);
-        processPointCloud(cloud_conv_, cloud_filtered_);
+        processPointCloud(cloud_conv_, cloud_filtered_,i);
         cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_filtered_.points.begin(), cloud_filtered_.points.end());
       }
       catch ( const tf2::TransformException& e )
@@ -344,8 +348,8 @@ void FusedScan::sendLaserVisualization() {
     scan_fuse_.header.stamp    = cloud_fuse_.header.stamp;
     scan_fuse_.header.seq      = cloud_fuse_.header.seq;
     scan_fuse_.angle_increment = angle_increment_;
-    scan_fuse_.angle_max       = angle_max_;
-    scan_fuse_.angle_min       = angle_min_;
+    scan_fuse_.angle_max       = M_PI;
+    scan_fuse_.angle_min       = -1* M_PI;
     scan_fuse_.range_max       = range_max_;
     scan_fuse_.range_min       = range_min_;
     scan_fuse_.scan_time       = scan_time_;
@@ -380,14 +384,20 @@ void FusedScan::sendVisualization(){
 
 }
 
-void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_msgs::PointCloud& cloud_processed){
+void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_msgs::PointCloud& cloud_processed, int lidar_no_){
 
     sensor_msgs::LaserScan output;
     output.header = cloud_msg.header;
     output.header.frame_id = base_link_;
 
-    output.angle_min = angle_min_;
-    output.angle_max = angle_max_;
+    if(lidar_no_==-1){
+    output.angle_min = -1* M_PI;;
+    output.angle_max = M_PI;;
+    }
+    else{
+    output.angle_min = angle_min_[lidar_no_];
+    output.angle_max = angle_max_[lidar_no_];
+    }
     output.angle_increment = angle_increment_;
 
     output.scan_time = scan_time_;

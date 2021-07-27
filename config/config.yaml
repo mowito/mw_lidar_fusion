@@ -1,4 +1,4 @@
-scan_topics: ["/scan"] #list of LaserScan topics, max 4
+scan_topics: ["/scan_s1","/scan_a2"] #list of LaserScan topics, max 4
 
 # pointcloud2_topics: ["/pointcloud"] #list of PointCloud2 topics, max 4
 
@@ -8,10 +8,10 @@ fused_pointcloud_topic_name: "/fused_pointcloud_temp" #topic name of fused Point
 
 base_link: "base_link"
 
-polygon: [[0.0, 0.0],[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]] #in float
+polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
 
-angle_min: 1.570796
-angle_max: 3.14159
+angle_min: [-1.570796,1.570796]
+angle_max: [0.0,3.14159]
 
 polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 

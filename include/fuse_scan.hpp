@@ -86,7 +86,7 @@ class FusedScan {
   void sendCloudVisualization(); //publishes fused pointcloud
   void sendPolygonVisualization(); //publishes polygon
 
-  void processPointCloud(sensor_msgs::PointCloud2& cloud_in, sensor_msgs::PointCloud& cloud_processed);
+  void processPointCloud(sensor_msgs::PointCloud2& cloud_in, sensor_msgs::PointCloud& cloud_processed, int lidar_no_=-1);
 
   private:
     ros::NodeHandle nh_;
@@ -153,8 +153,8 @@ class FusedScan {
     double range_max_;
     double max_height_ = 1.0;
     double min_height_ = 0.0;
-    double angle_min_;
-    double angle_max_;
+    std::vector<double> angle_min_;
+    std::vector<double> angle_max_;
 };
 
 #endif

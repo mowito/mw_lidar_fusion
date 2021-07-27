@@ -38,10 +38,13 @@ Edit the parameters in the line above and add it to your launch file if a static
 
 - polygon: coordinates of edges of the polygon to be cropped from the Laserscan/Pointcloud data
 
-- angle_min: minimum angle for which data from all input lidar's is included in the fused scan
+- angle_min: minimum angle for each lidar seperately for which data from lidar's input is included in the fused scan
 
-- angle_max: maximum angle for which data from all input lidar's is included in the fused scan
+- angle_max: maximum angle for each lidar seperately for which data from lidar's input is included in the fused scan
+
 - polygon_topic_name: topic name at which coordinates of edges of the polygon will be published
+
+Note: All angles from angle_min and angle_max as with respect to the base link.
 
 ## Testing On Simulation
 
@@ -73,16 +76,10 @@ The points in white represent the filtered and fused data whereas the points in 
 
 ### Two LiDAR's
 
-The points in white represent the filtered and fused data whereas the points in red and purple represent the unfiltered raw laserscan from two seperate rostopics
+The points in white represent the filtered and fused data whereas the points in red and purple represent the unfiltered raw laserscan from two seperate rostopics. The box in Green represents the polygon which is being cropped out and the transforms between both LiDAR's and the base_link.
 
-- Raw data
+![](/examples/11.png)
 
-![](/examples/8.png)
+- Fusion and filtering with angle_min= -pi/2 angle_max= 0 for one LiDAR and angle_min= pi/2 angle_max= pi for the other one. 
 
-- Fusion of LiDAR Data
-
-![](/examples/6.png)
-
-- Fusion and filtering with angle_min= 0 angle_max=pi
-
-![](/examples/7.png)
+![](/examples/10.png)
