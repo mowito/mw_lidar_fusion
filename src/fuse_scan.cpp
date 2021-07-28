@@ -169,7 +169,7 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
     for(int i=0; i<num_lidars_;i++){
       try
       {
-        projector_.transformLaserScanToPointCloud(base_link_, scan_msg_[i], cloud_msg, tflistener_);
+        projector_.transformLaserScanToPointCloud(scan_msg_[i].header.frame_id, scan_msg_[i], cloud_msg, tflistener_);
         //apply angle_filtering 
         convertPointCloudToPointCloud2(cloud_msg, cloud_conv_);
         processPointCloud(cloud_conv_, cloud_filtered_,i);
@@ -182,9 +182,9 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
 
     }
 
-      cloud_fuse_.header.frame_id = cloud_msg.header.frame_id;
-      cloud_fuse_.header.seq      = cloud_msg.header.seq;
-      cloud_fuse_.header.stamp    = cloud_msg.header.stamp;
+      cloud_fuse_.header.frame_id = cloud_filtered_.header.frame_id;
+      cloud_fuse_.header.seq      = cloud_filtered_.header.seq;
+      cloud_fuse_.header.stamp    = cloud_filtered_.header.stamp;
 
       //merge the point clouds
       if(angle_increment_ < 0)
@@ -388,13 +388,14 @@ void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_ms
 
     sensor_msgs::LaserScan output;
     output.header = cloud_msg.header;
-    output.header.frame_id = base_link_;
 
     if(lidar_no_==-1){
+    output.header.frame_id = base_link_;
     output.angle_min = -1* M_PI;;
     output.angle_max = M_PI;;
     }
     else{
+    output.header.frame_id = cloud_msg.header.frame_id;
     output.angle_min = angle_min_[lidar_no_];
     output.angle_max = angle_max_[lidar_no_];
     }
@@ -415,23 +416,23 @@ void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_ms
     sensor_msgs::PointCloud2 cloud2_msg_transformed;
 
     // Transform cloud if necessary
-    if (!(output.header.frame_id == cloud_msg.header.frame_id))
-    {
-      try
-      {
-        pcl_ros::transformPointCloud (base_link_, cloud_msg, cloud2_msg_transformed, tflistener_);
-        cloud_out.reset(new sensor_msgs::PointCloud2(cloud2_msg_transformed));
-      }
-      catch (tf2::TransformException ex)
-      {
-        ROS_ERROR_STREAM("Transform failure: " << ex.what());
-        return;
-      }
-    }
-    else
-    {
+    // if (!(output.header.frame_id == cloud_msg.header.frame_id))
+    // {
+    //   try
+    //   {
+    //     pcl_ros::transformPointCloud (base_link_, cloud_msg, cloud2_msg_transformed, tflistener_);
+    //     cloud_out.reset(new sensor_msgs::PointCloud2(cloud2_msg_transformed));
+    //   }
+    //   catch (tf2::TransformException ex)
+    //   {
+    //     ROS_ERROR_STREAM("Transform failure: " << ex.what());
+    //     return;
+    //   }
+    // }
+    // else
+    // {
       cloud_out.reset(new sensor_msgs::PointCloud2(cloud_msg));
-    }
+    // }
 
     // Iterate through pointcloud
     for (sensor_msgs::PointCloud2ConstIterator<float>
