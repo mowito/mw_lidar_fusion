@@ -38,9 +38,9 @@ Edit the parameters in the line above and add it to your launch file if a static
 
 - polygon: coordinates of edges of the polygon to be cropped from the Laserscan/Pointcloud data
 
-- angle_min: minimum angle for each lidar seperately for which data from lidar's input is included in the fused scan
+- angle_min: minimum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,6.28319] in radians
 
-- angle_max: maximum angle for each lidar seperately for which data from lidar's input is included in the fused scan
+- angle_max: maximum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,6.28319] in radians
 
 - polygon_topic_name: topic name at which coordinates of edges of the polygon will be published
 
@@ -66,11 +66,11 @@ rosbag play --clock name_of_bag.bag
 
 The points in white represent the filtered and fused data whereas the points in red represent the unfiltered raw laserscan
 
-- Filtering with angle_min=-pi/2 angle_max=pi/2
+- Filtering w.r.t. LiDAR frame
 
 ![](/examples/1.png)
 
-- Filtering with angle_min= pi/2 angle_max=pi
+- Filtering w.r.t. LiDAR frame
 
 ![](/examples/5.png)
 
@@ -78,8 +78,8 @@ The points in white represent the filtered and fused data whereas the points in 
 
 The points in white represent the filtered and fused data whereas the points in red and purple represent the unfiltered raw laserscan from two seperate rostopics. The box in Green represents the polygon which is being cropped out and the transforms between both LiDAR's and the base_link.
 
-![](/examples/11.png)
+![](/examples/14.png)
 
-- Fusion and filtering with angle_min= -pi/2 angle_max= 0 for one LiDAR and angle_min= pi/2 angle_max= pi for the other one. 
+- Fusion and filtering w.r.t. each LiDAR frame seperately to remove points inside the robot's own body.
 
-![](/examples/10.png)
+![](/examples/13.png)

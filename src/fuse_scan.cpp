@@ -512,14 +512,7 @@ void FusedScan::filterAngle(sensor_msgs::PointCloud2& cloud_msg, sensor_msgs::Po
       }
       
       double range = hypot(*iter_x, *iter_y);
-      if (range < range_min_)
-      {
-        ROS_DEBUG("rejected for range %f below minimum value %f. Point: (%f, %f, %f)", range, range_min_, *iter_x, *iter_y,
-                      *iter_z);
-        continue;
-      }
-
-      double angle = atan2(*iter_y, *iter_x);
+      double angle = fmod((atan2(*iter_y, *iter_x) + (2 * M_PI)),(2 * M_PI));
       if (angle < output.angle_min || angle > output.angle_max)
       {
         ROS_DEBUG("rejected for angle %f not in range (%f, %f)\n", angle, output.angle_min, output.angle_max);
