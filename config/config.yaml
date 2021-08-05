@@ -12,8 +12,9 @@ polygon: [[0.5, -0.5],[0.5, 0.5], [-0.5, 0.5], [-0.5, -0.5]] #in float
 
 polygon_topic_name: "/lidar_crop_polygon" #topic name of polygon
 
-angle_min: [1.570796,1.570796] #in double
-angle_max: [4.71239,4.71239] #in double
+#ange_min and angle_max for the lidar topics to be filtered
+angle_min: [50.0] #in double angle_min: [angle_min_for_scan1, angle_min_for_scan2,...] Units: degrees (0-360)
+angle_max: [310.0] #in double angle_max: [angle_max_for_scan1, angle_max_for_scan2,...] Units: degrees (0-360)
 
 ## OPTIONAL PARAMETERS - if below parameters are not specified, the output fused_scan parameters will be set to the first input scan topic
 # fused_scan_options:

@@ -73,6 +73,11 @@ init_params_(false)
     num_lidars_ = scan_topics_.size();
     num_depth_sensors_ = cloud_topics_.size();
 
+    for(int i=0; i < num_lidars_; i++){
+      angle_min_[i]=angle_min_[i]*M_PI/180;
+      angle_max_[i]=angle_max_[i]*M_PI/180;
+    }
+
     //subscribe to scan msgs
     if(num_lidars_){
       std::string scan_topic_name;
@@ -165,15 +170,15 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
 
     //convert scan to pointcloud
     cloud_fuse_.points.clear();
-    sensor_msgs::PointCloud cloud_msg, cloud_filtered_;
+    sensor_msgs::PointCloud cloud_msg, cloud_filtered;
     for(int i=0; i<num_lidars_;i++){
       try
       {
         projector_.transformLaserScanToPointCloud(scan_msg_[i].header.frame_id, scan_msg_[i], cloud_msg, tflistener_);
         //apply angle_filtering 
         convertPointCloudToPointCloud2(cloud_msg, cloud_conv_);
-        filterAngle(cloud_conv_, cloud_filtered_,i);
-        cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_filtered_.points.begin(), cloud_filtered_.points.end());
+        filterAngle(cloud_conv_, cloud_filtered,i);
+        cloud_fuse_.points.insert(cloud_fuse_.points.end(), cloud_filtered.points.begin(), cloud_filtered.points.end());
       }
       catch ( const tf2::TransformException& e )
       {
@@ -182,9 +187,9 @@ void FusedScan::fusedScanCallback(const sensor_msgs::LaserScan::ConstPtr& scan_1
 
     }
 
-      cloud_fuse_.header.frame_id = cloud_filtered_.header.frame_id;
-      cloud_fuse_.header.seq      = cloud_filtered_.header.seq;
-      cloud_fuse_.header.stamp    = cloud_filtered_.header.stamp;
+      cloud_fuse_.header.frame_id = cloud_filtered.header.frame_id;
+      cloud_fuse_.header.seq      = cloud_filtered.header.seq;
+      cloud_fuse_.header.stamp    = cloud_filtered.header.stamp;
 
       //merge the point clouds
       if(angle_increment_ < 0)
@@ -472,14 +477,14 @@ void FusedScan::processPointCloud(sensor_msgs::PointCloud2& cloud_msg, sensor_ms
     projector_.transformLaserScanToPointCloud(base_link_, output, cloud_processed, tflistener_);
   }
 
-void FusedScan::filterAngle(sensor_msgs::PointCloud2& cloud_msg, sensor_msgs::PointCloud& cloud_processed, int lidar_no_){
+void FusedScan::filterAngle(const sensor_msgs::PointCloud2& cloud_msg, sensor_msgs::PointCloud& cloud_processed, const int lidar_no){
 
     sensor_msgs::LaserScan output;
     output.header = cloud_msg.header;
 
     output.header.frame_id = cloud_msg.header.frame_id;
-    output.angle_min = angle_min_[lidar_no_];
-    output.angle_max = angle_max_[lidar_no_];
+    output.angle_min = angle_min_[lidar_no];
+    output.angle_max = angle_max_[lidar_no];
     output.angle_increment = angle_increment_;
 
     output.scan_time = scan_time_;
