@@ -88,6 +88,13 @@ class FusedScan {
 
   void processPointCloud(sensor_msgs::PointCloud2& cloud_in, sensor_msgs::PointCloud& cloud_processed);
 
+  /**
+   * @brief filters individual lidar scan based on angle
+   * @param[in] pointcloud to be filtered, the lidar_no for which filtering is to be done
+   * @param[out] filtered pointcloud
+   */
+  void filterAngle(const sensor_msgs::PointCloud2& cloud_in, sensor_msgs::PointCloud& cloud_processed, const int lidar_no);
+
   private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
@@ -126,6 +133,7 @@ class FusedScan {
 
     sensor_msgs::PointCloud cloud_fuse_, cloud_crop_;
     sensor_msgs::LaserScan scan_fuse_, scan_default_;
+    sensor_msgs::PointCloud2 cloud_conv_;
 
     std::vector<std::string> scan_topics_, cloud_topics_; //vector of scan and pointcloud2 topic names to subscribe to
     std::string fused_scan_topic_name_;
@@ -152,7 +160,8 @@ class FusedScan {
     double range_max_;
     double max_height_ = 1.0;
     double min_height_ = 0.0;
-
+    std::vector<double> angle_min_{0.0,0.0,0.0,0.0};
+    std::vector<double> angle_max_{360.0,360.0,360.0,360.0};
 };
 
 #endif
