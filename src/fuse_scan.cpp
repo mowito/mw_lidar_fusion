@@ -137,7 +137,7 @@ void FusedScan::initializeParams(const sensor_msgs::LaserScan::ConstPtr& scan_fr
   if(scan_time_ < 0)
     scan_time_ = scan_front->scan_time;
 
-  range_size_ = std::ceil((2 * M_PI)/angle_increment_);
+  range_size_ = std::floor((2 * M_PI)/angle_increment_);
 
   scan_fuse_.ranges.resize(range_size_, range_max_);
   scan_fuse_.intensities.resize(range_size_, 100.0);
