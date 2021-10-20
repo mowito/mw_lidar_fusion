@@ -38,9 +38,9 @@ Edit the parameters in the line above and add it to your launch file if a static
 
 - polygon: coordinates of edges of the polygon to be cropped from the Laserscan/Pointcloud data
 
-- angle_min: minimum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,6.28319] in radians
+- angle_min: minimum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,360] in degrees
 
-- angle_max: maximum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,6.28319] in radians
+- angle_max: maximum angle for each lidar seperately for which data from lidar's input is included in the fused scan, range:[0,360] in degrees
 
 - polygon_topic_name: topic name at which coordinates of edges of the polygon will be published
 
