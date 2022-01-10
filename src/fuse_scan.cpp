@@ -104,7 +104,7 @@ init_params_(false)
     //initialize a laserscan message with default parameters (for PointCloud to laserscan conversion and no parameters are specified)
     scan_default_.angle_increment = M_PI/360;
     scan_default_.range_max = 4.0;
-    scan_default_.range_min = 0.45;
+    scan_default_.range_min = 0.45; 
     scan_default_.scan_time = 1.0/3;
 
     //register approximate_time callback according to sensors
@@ -143,8 +143,6 @@ void FusedScan::initializeParams(const sensor_msgs::LaserScan::ConstPtr& scan_fr
   scan_fuse_.intensities.resize(range_size_, 100.0);
 
   init_params_ = true;
-
-
 }
 
 //callback function for only laserscan fusion
